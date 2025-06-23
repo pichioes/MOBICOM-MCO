@@ -98,11 +98,13 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="335dp">
+        android:layout_height="335dp"
+        android:layout_gravity="center">
 
         <LinearLayout
             android:layout_width="390dp"
             android:layout_height="309dp"
+            android:layout_gravity="center"
             android:clipToPadding="true"
             android:orientation="vertical">
 
@@ -120,6 +122,7 @@
                         android:id="@+id/imageView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center"
                         android:adjustViewBounds="true"
                         android:background="@drawable/circle_mask"
                         android:clipToOutline="true"
