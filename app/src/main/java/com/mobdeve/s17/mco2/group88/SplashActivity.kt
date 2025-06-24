@@ -21,7 +21,7 @@ class SplashActivity : AppCompatActivity() {
 
         // Show splash screen for 3 seconds (3000ms)
         Handler(Looper.getMainLooper()).postDelayed({
-            startActivity(Intent(this, MainActivity::class.java))
+            startActivity(Intent(this, EditProfile::class.java))
             finish()
         }, 3000L)
     }
