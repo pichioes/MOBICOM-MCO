@@ -202,12 +202,12 @@
 
                 <!-- Google -->
                 <ImageButton
-                    android:id="@+id/imageButton"
+                    android:id="@+id/imageButton1"
                     android:layout_width="118dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:backgroundTint="#00FFFFFF"
-                    app:srcCompat="@drawable/Google" />
+                    app:srcCompat="@drawable/google" />
 
                 <!-- Facebook -->
                 <ImageButton
@@ -216,17 +216,18 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:backgroundTint="#00FFFFFF"
-                    app:srcCompat="@drawable/Facebook" />
+                    app:srcCompat="@drawable/facebook" />
 
             </LinearLayout>
 
+            <!-- Login Bottom Image -->
             <ImageView
-                android:id="@+id/loginBottomImage"
+                android:id="@+id/login_bottom_image"
                 android:layout_width="308dp"
                 android:layout_height="306dp"
                 android:adjustViewBounds="true"
                 android:scaleType="fitCenter"
-                android:src="@drawable/Login" />
+                android:src="@drawable/login" />
 
         </LinearLayout>
     </ScrollView>
