@@ -31,6 +31,24 @@ class EditProfile : AppCompatActivity() {
         setupSpinner(ageSpinner, ageOptions)
         setupSpinner(heightSpinner, heightOptions)
         setupSpinner(weightSpinner, weightOptions)
+
+        val genderGroup = findViewById<android.widget.RadioGroup>(R.id.genderRadioGroup)
+        val femaleButton = findViewById<android.widget.RadioButton>(R.id.femaleRadioButton)
+        val maleButton = findViewById<android.widget.RadioButton>(R.id.maleRadioButton)
+
+        fun updateGenderColors() {
+            val white = getColor(R.color.white)
+            val black = getColor(R.color.black)
+
+            femaleButton.setTextColor(if (femaleButton.isChecked) white else black)
+            maleButton.setTextColor(if (maleButton.isChecked) white else black)
+        }
+
+        updateGenderColors() // apply initial state when screen opens
+
+        genderGroup.setOnCheckedChangeListener { _, _ ->
+            updateGenderColors()
+        }
     }
 
     private fun setupSpinner(spinner: Spinner, items: List<String>) {
@@ -38,6 +56,8 @@ class EditProfile : AppCompatActivity() {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinner.adapter = adapter
     }
+
+
 }
 
 // Example: capture input on Save (you can wire this to a button)

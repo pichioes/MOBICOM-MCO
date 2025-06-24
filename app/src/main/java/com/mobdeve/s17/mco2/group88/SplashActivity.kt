@@ -19,7 +19,7 @@ class SplashActivity : AppCompatActivity() {
             .load(R.drawable.splashscreen) // make sure this is a valid GIF
             .into(splashGif)
 
-        // Show splash screen for 3 seconds (3000ms)
+        // Show splash screen for 3 seconds (3000ms) I MADE THIS GO DIRECTLY TO THE EDIT PAGE SO LIKE JS CHANGE IT -JULS
         Handler(Looper.getMainLooper()).postDelayed({
             startActivity(Intent(this, EditProfile::class.java))
             finish()
