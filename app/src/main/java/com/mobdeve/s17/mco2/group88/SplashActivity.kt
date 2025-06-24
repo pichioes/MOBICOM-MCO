@@ -21,7 +21,7 @@ class SplashActivity : AppCompatActivity() {
 
         // Show splash screen for 3 seconds (3000ms) I MADE THIS GO DIRECTLY TO THE EDIT PAGE SO LIKE JS CHANGE IT -JULS
         Handler(Looper.getMainLooper()).postDelayed({
-            startActivity(Intent(this, EditProfile::class.java))
+            startActivity(Intent(this, LoginActivity::class.java))
             finish()
         }, 3000L)
     }

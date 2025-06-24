@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <!-- Background vector image -->
+    <ImageView
+        android:id="@+id/signupVector"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:contentDescription="Decorative background"
+        android:scaleType="fitStart"
+        android:src="@drawable/signup_vector" />
+
+    <!-- Foreground content -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <!-- Back Button aligned to the left -->
+
+            <!-- Title -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="start"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/backButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="Back"
+                    android:minWidth="48dp"
+                    android:minHeight="48dp"
+                    android:src="@drawable/back_arrow" />
+            </LinearLayout>
+
+            <!-- Email -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="30dp"
+                android:layout_marginBottom="40dp"
+                android:fontFamily="@font/newsreader"
+                android:text="Create Account"
+                android:textColor="@android:color/white"
+                android:textSize="36sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/emailInput"
+                android:layout_width="319dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="15dp"
+                android:background="@drawable/edittext_background"
+                android:fontFamily="@font/outfit"
+                android:hint="Email"
+                android:inputType="textEmailAddress"
+                android:padding="12dp"
+                android:textColor="@android:color/black"
+                android:textColorHint="#888888" />
+
+            <!-- Password -->
+            <EditText
+                android:id="@+id/passwordInput"
+                android:layout_width="319dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="15dp"
+                android:background="@drawable/edittext_background"
+                android:fontFamily="@font/outfit"
+                android:hint="Password"
+                android:inputType="textPassword"
+                android:padding="12dp"
+                android:textColor="@android:color/black"
+                android:textColorHint="#888888" />
+
+            <!-- Confirm Password -->
+            <EditText
+                android:id="@+id/confirmPasswordInput"
+                android:layout_width="319dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="20dp"
+                android:background="@drawable/edittext_background"
+                android:fontFamily="@font/outfit"
+                android:hint="Confirm Password"
+                android:inputType="textPassword"
+                android:padding="12dp"
+                android:textColor="@android:color/black"
+                android:textColorHint="#888888" />
+
+
+            <!-- Create Button -->
+
+            <Button
+                android:id="@+id/createAccountButton"
+                android:layout_width="241dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/loginbutton_background"
+                android:backgroundTint="#222222"
+                android:fontFamily="@font/outfit"
+                android:text="Create"
+                android:textColor="@android:color/white" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="25dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/outfit"
+                    android:text="Do you already have an account?"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/loginHereLink"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/outfit"
+                    android:text=" Login Here"
+                    android:textColor="#132E4F"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+
+            <!-- Bottom Illustration -->
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="380dp"
+                android:layout_gravity="center_horizontal"
+                android:contentDescription="Sign Up Illustration"
+                android:scaleType="fitCenter"
+                android:src="@drawable/sign_up" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

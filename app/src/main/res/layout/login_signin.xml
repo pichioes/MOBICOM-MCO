@@ -9,9 +9,9 @@
     <ImageView
         android:id="@+id/vectorBackground"
         android:layout_width="match_parent"
-        android:layout_height="724dp"
+        android:layout_height="692dp"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="167dp"
+        android:layout_marginBottom="199dp"
         android:adjustViewBounds="true"
         android:scaleType="fitXY"
         android:src="@drawable/login_vector" />
@@ -30,6 +30,8 @@
             android:orientation="vertical">
 
             <!-- Back Arrow -->
+
+            <!-- Sign in Heading -->
             <ImageButton
                 android:layout_width="24dp"
                 android:layout_height="24dp"
@@ -38,7 +40,6 @@
                 android:backgroundTint="#00FFFFFF"
                 android:src="@drawable/back_arrow" />
 
-            <!-- Sign in Heading -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -119,18 +120,18 @@
             <LinearLayout
                 android:layout_width="319dp"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
                 android:orientation="horizontal">
 
                 <CheckBox
                     android:id="@+id/rememberMe"
-                    android:layout_width="219dp"
+                    android:layout_width="201dp"
                     android:layout_height="wrap_content"
                     android:buttonTint="#F8F5F5"
                     android:checked="false"
                     android:fontFamily="@font/outfit"
                     android:text="Remember Me"
-                    android:textColor="#FFFFFF" />
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -138,7 +139,7 @@
                     android:fontFamily="@font/outfit"
                     android:text="Forgot password?"
                     android:textColor="#132E4F"
-                    android:textSize="12sp" />
+                    android:textSize="14sp" />
             </LinearLayout>
 
             <Button
@@ -149,7 +150,7 @@
                 android:background="@drawable/loginbutton_background"
                 android:backgroundTint="@null"
                 android:fontFamily="@font/outfit"
-                android:text="Login"
+                android:text="LOGIN"
                 android:textAllCaps="false"
                 android:textColor="#FFFFFF"
                 android:textSize="14sp" />
@@ -164,12 +165,12 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:layout_width="172dp"
+                    android:layout_width="161dp"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/outfit"
                     android:text="Don't have an account?"
                     android:textColor="#FFFFFF"
-                    android:textSize="12sp" />
+                    android:textSize="14sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -177,14 +178,14 @@
                     android:fontFamily="@font/outfit"
                     android:text=" Sign up here"
                     android:textColor="#132E4F"
-                    android:textSize="12sp" />
+                    android:textSize="14sp" />
             </LinearLayout>
 
             <!-- Divider -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="8dp"
                 android:layout_marginBottom="3dp"
                 android:fontFamily="@font/outfit"
                 android:text="- OR Continue with -"
@@ -195,7 +196,6 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
                 android:gravity="center"
                 android:orientation="horizontal"
                 android:weightSum="2">
@@ -223,8 +223,8 @@
             <!-- Login Bottom Image -->
             <ImageView
                 android:id="@+id/login_bottom_image"
-                android:layout_width="308dp"
-                android:layout_height="306dp"
+                android:layout_width="match_parent"
+                android:layout_height="333dp"
                 android:adjustViewBounds="true"
                 android:scaleType="fitCenter"
                 android:src="@drawable/login" />
