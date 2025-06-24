@@ -206,7 +206,7 @@
                         android:layout_width="18dp"
                         android:layout_height="18dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/arrow_vector" />
+                        android:src="@drawable/forward_arrow" />
                 </FrameLayout>
             </LinearLayout>
         </LinearLayout>

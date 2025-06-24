@@ -1,7 +1,233 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
 
-</LinearLayout>
+    <!-- White Vector Background on Top -->
+    <ImageView
+        android:id="@+id/vectorBackground"
+        android:layout_width="match_parent"
+        android:layout_height="724dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="167dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
+        android:src="@drawable/login_vector" />
+
+    <!-- Scrollable Content -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:padding="24dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <!-- Back Arrow -->
+            <ImageButton
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="start"
+                android:layout_marginTop="16dp"
+                android:backgroundTint="#00FFFFFF"
+                android:src="@drawable/back_arrow" />
+
+            <!-- Sign in Heading -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0dp"
+                android:fontFamily="@font/newsreader"
+                android:text="Sign in"
+                android:textColor="#FFFFFF"
+                android:textSize="36sp" />
+
+            <!-- Logo -->
+            <ImageView
+                android:layout_width="349dp"
+                android:layout_height="48dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp"
+                android:adjustViewBounds="true"
+                android:scaleType="fitCenter"
+                android:src="@drawable/logo" />
+
+            <!-- Welcome Text -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:fontFamily="@font/outfit"
+                android:text="Welcome Back"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
+
+            <!-- Email Input -->
+            <EditText
+                android:id="@+id/emailInput"
+                android:layout_width="319dp"
+                android:layout_height="50dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/edittext_background"
+                android:fontFamily="@font/outfit"
+                android:hint="Email"
+                android:inputType="textEmailAddress"
+                android:paddingHorizontal="16dp"
+                android:textColor="#000"
+                android:textColorHint="#999" />
+
+            <!-- Password Input with Toggle -->
+            <!-- Password Input with Eye Toggle -->
+            <RelativeLayout
+                android:layout_width="319dp"
+                android:layout_height="50dp"
+                android:layout_marginBottom="0dp">
+
+                <EditText
+                    android:id="@+id/passwordInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/edittext_background"
+                    android:fontFamily="@font/outfit"
+                    android:hint="Password"
+                    android:inputType="textPassword"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="48dp"
+                    android:textColor="#000"
+                    android:textColorHint="#999" />
+
+                <ImageButton
+                    android:id="@+id/passwordToggle"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="16dp"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="Toggle password visibility"
+                    android:src="@drawable/password_eyeopen" />
+            </RelativeLayout>
+
+            <!-- Remember Me / Forgot Password -->
+            <LinearLayout
+                android:layout_width="319dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:orientation="horizontal">
+
+                <CheckBox
+                    android:id="@+id/rememberMe"
+                    android:layout_width="219dp"
+                    android:layout_height="wrap_content"
+                    android:buttonTint="#F8F5F5"
+                    android:checked="false"
+                    android:fontFamily="@font/outfit"
+                    android:text="Remember Me"
+                    android:textColor="#FFFFFF" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/outfit"
+                    android:text="Forgot password?"
+                    android:textColor="#132E4F"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/loginButton"
+                android:layout_width="241dp"
+                android:layout_height="40dp"
+                android:layout_marginBottom="3dp"
+                android:background="@drawable/loginbutton_background"
+                android:backgroundTint="@null"
+                android:fontFamily="@font/outfit"
+                android:text="Login"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
+
+
+            <!-- Sign Up Row -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="15dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="172dp"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/outfit"
+                    android:text="Don't have an account?"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/outfit"
+                    android:text=" Sign up here"
+                    android:textColor="#132E4F"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Divider -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="3dp"
+                android:fontFamily="@font/outfit"
+                android:text="- OR Continue with -"
+                android:textColor="#132E4F"
+                android:textSize="12sp" />
+
+            <!-- Social Buttons -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <!-- Google -->
+                <ImageButton
+                    android:id="@+id/imageButton"
+                    android:layout_width="118dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:backgroundTint="#00FFFFFF"
+                    app:srcCompat="@drawable/Google" />
+
+                <!-- Facebook -->
+                <ImageButton
+                    android:id="@+id/imageButton2"
+                    android:layout_width="135dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:backgroundTint="#00FFFFFF"
+                    app:srcCompat="@drawable/Facebook" />
+
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/loginBottomImage"
+                android:layout_width="308dp"
+                android:layout_height="306dp"
+                android:adjustViewBounds="true"
+                android:scaleType="fitCenter"
+                android:src="@drawable/Login" />
+
+        </LinearLayout>
+    </ScrollView>
+</RelativeLayout>
