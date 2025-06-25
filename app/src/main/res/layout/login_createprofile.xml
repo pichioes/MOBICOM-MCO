@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <!-- Background Vector -->
+    <ImageView
+        android:id="@+id/createProfileVector"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:scaleType="fitStart"
+        android:src="@drawable/createprofile_vector"
+        android:contentDescription="Background vector" />
+
+    <!-- Scrollable Foreground Content -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Back Arrow -->
+        <ImageButton
+            android:id="@+id/backButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:background="@android:color/transparent"
+            android:contentDescription="Back"
+            android:src="@drawable/back_arrow" />
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:fontFamily="@font/newsreader"
+            android:text="Profile"
+            android:textColor="@android:color/white"
+            android:textSize="36sp"
+            android:textStyle="bold" />
+
+        <!-- Subtitle -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:fontFamily="@font/outfit"
+            android:text="Let's Start By Making Your Profile"
+            android:textColor="@android:color/white"
+            android:textSize="14sp" />
+
+        <!-- Name -->
+        <EditText
+            android:id="@+id/nameInput"
+            android:layout_width="319dp"
+            android:layout_height="50dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/edittext_background"
+            android:fontFamily="@font/outfit"
+            android:hint="Name"
+            android:inputType="textPersonName"
+            android:padding="12dp"
+            android:textColor="@android:color/black"
+            android:textColorHint="#888888" />
+
+        <!-- Age -->
+        <EditText
+            android:id="@+id/ageInput"
+            android:layout_width="319dp"
+            android:layout_height="50dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/edittext_background"
+            android:fontFamily="@font/outfit"
+            android:hint="Age"
+            android:inputType="number"
+            android:padding="12dp"
+            android:textColor="@android:color/black"
+            android:textColorHint="#888888" />
+
+        <!-- Height -->
+        <EditText
+            android:id="@+id/heightInput"
+            android:layout_width="319dp"
+            android:layout_height="50dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/edittext_background"
+            android:fontFamily="@font/outfit"
+            android:hint="Height [in]"
+            android:inputType="numberDecimal"
+            android:padding="12dp"
+            android:textColor="@android:color/black"
+            android:textColorHint="#888888" />
+
+        <!-- Weight -->
+        <EditText
+            android:id="@+id/weightInput"
+            android:layout_width="319dp"
+            android:layout_height="50dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/edittext_background"
+            android:fontFamily="@font/outfit"
+            android:hint="Weight [kg]"
+            android:inputType="numberDecimal"
+            android:padding="12dp"
+            android:textColor="@android:color/black"
+            android:textColorHint="#888888" />
+
+        <!-- Gender Label -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:layout_marginStart="25dp"
+            android:layout_marginBottom="3dp"
+            android:fontFamily="@font/outfit"
+            android:text="Gender"
+            android:textColor="@android:color/white"
+            android:textSize="14sp" />
+
+        <!-- Gender Options -->
+        <RadioGroup
+            android:id="@+id/genderRadioGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="18dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/maleRadio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:buttonTint="@drawable/selector_radio"
+                android:fontFamily="@font/outfit"
+                android:text="Male"
+                android:textColor="@android:color/white" />
+
+            <RadioButton
+                android:id="@+id/femaleRadio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:buttonTint="@drawable/selector_radio"
+                android:fontFamily="@font/outfit"
+                android:text="Female"
+                android:textColor="@android:color/white" />
+
+            <RadioButton
+                android:id="@+id/otherRadio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:buttonTint="@drawable/selector_radio"
+                android:fontFamily="@font/outfit"
+                android:text="Other"
+                android:textColor="@android:color/white" />
+        </RadioGroup>
+
+        <!-- Continue Button -->
+        <Button
+            android:id="@+id/continueButton"
+            android:layout_width="241dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/loginbutton_background"
+            android:fontFamily="@font/outfit"
+            android:text="Continue"
+            android:textColor="@android:color/white" />
+
+        <!-- Bottom Illustration -->
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="380dp"
+            android:layout_gravity="center_horizontal"
+            android:contentDescription="Create Profile Illustration"
+            android:scaleType="fitCenter"
+            android:src="@drawable/create_profile" />
+
+    </LinearLayout>
+
+</FrameLayout>
