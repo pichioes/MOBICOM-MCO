@@ -146,8 +146,8 @@
             android:layout_marginBottom="3dp"
             android:background="@drawable/loginbutton_background"
             android:backgroundTint="@null"
-            android:fontFamily="@font/outfit"
-            android:text="LOGIN"
+            android:fontFamily="@font/inter_medium"
+            android:text="Login"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
             android:textSize="14sp" />

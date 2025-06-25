@@ -30,5 +30,9 @@
         <activity android:name=".EditProfile" />
         <activity android:name=".ForgotPasswordActivity" />
         <activity android:name=".SignupActivity" />
+
+        <meta-data
+            android:name="preloaded_fonts"
+            android:resource="@array/preloaded_fonts" />
     </application>
 </manifest>

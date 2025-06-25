@@ -167,7 +167,8 @@
             android:layout_height="40dp"
             android:layout_gravity="center_horizontal"
             android:background="@drawable/loginbutton_background"
-            android:fontFamily="@font/outfit"
+            android:fontFamily="@font/inter_medium"
+            android:textAllCaps="false"
             android:text="Continue"
             android:textColor="@android:color/white" />
 

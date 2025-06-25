@@ -117,9 +117,11 @@
                 android:layout_marginBottom="8dp"
                 android:background="@drawable/loginbutton_background"
                 android:backgroundTint="#222222"
-                android:fontFamily="@font/outfit"
+                android:fontFamily="@font/inter_medium"
+                android:textAllCaps="false"
                 android:text="Create"
-                android:textColor="@android:color/white" />
+                android:textColor="@android:color/white"
+                />
 
             <LinearLayout
                 android:layout_width="wrap_content"

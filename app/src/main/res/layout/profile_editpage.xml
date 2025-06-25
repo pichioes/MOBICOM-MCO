@@ -264,6 +264,8 @@
         android:layout_gravity="center"
         android:layout_marginTop="10dp"
         android:text="Update"
+        android:fontFamily="@font/inter_medium"
+        android:textAllCaps="false"
         android:backgroundTint="@color/textcolor"/>
 
 </LinearLayout>
