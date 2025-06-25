@@ -31,10 +31,9 @@
 
             <!-- Back Arrow -->
 
-            <!-- Sign in Heading -->
             <ImageButton
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:layout_gravity="start"
                 android:layout_marginTop="16dp"
                 android:backgroundTint="#00FFFFFF"
