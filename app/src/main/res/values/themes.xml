@@ -1,16 +1,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Splash Theme without ActionBar -->
+    <!-- Main App Theme without ActionBar -->
+    <style name="Theme.MOBICOMMCO2" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- App Colors -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary</item>
+        <item name="colorSecondary">@color/colorSecondary</item>
+
+        <!-- Fullscreen Appearance -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/black</item>
+        <item name="android:windowLightStatusBar">false</item> <!-- White text on status bar -->
+    </style>
+
+    <!-- Splash Screen Theme -->
     <style name="Theme.MOBICOMMCO2.Splash" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="windowSplashScreenAnimationDuration">1900</item>
         <item name="postSplashScreenTheme">@style/Theme.MOBICOMMCO2</item>
         <item name="android:windowBackground">@color/white</item>
-    </style>
-
-    <!-- Main App Theme without ActionBar -->
-    <style name="Theme.MOBICOMMCO2" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/primary</item>
-        <item name="colorSecondary">@color/colorSecondary</item>
     </style>
 
 </resources>
