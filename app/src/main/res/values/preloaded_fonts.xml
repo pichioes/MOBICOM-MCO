@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <array name="preloaded_fonts" translatable="false">
-        <item>@font/abeezee</item>
-        <item>@font/alexandria_light</item>
-        <item>@font/arimo</item>
-        <item>@font/inter</item>
         <item>@font/inter_medium</item>
-        <item>@font/inter_thin</item>
     </array>
 </resources>

@@ -36,7 +36,7 @@
                 android:orientation="horizontal">
 
                 <ImageButton
-                    android:id="@+id/backButton"
+                    android:id="@+id/signupBackButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@android:color/transparent"
@@ -75,36 +75,72 @@
                 android:textColorHint="#888888" />
 
             <!-- Password -->
-            <EditText
-                android:id="@+id/passwordInput"
+            <RelativeLayout
                 android:layout_width="319dp"
                 android:layout_height="50dp"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="8dp"
-                android:layout_marginBottom="15dp"
-                android:background="@drawable/edittext_background"
-                android:fontFamily="@font/outfit"
-                android:hint="Password"
-                android:inputType="textPassword"
-                android:padding="12dp"
-                android:textColor="@android:color/black"
-                android:textColorHint="#888888" />
+                android:layout_marginBottom="15dp">
+
+                <EditText
+                    android:id="@+id/passwordInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/edittext_background"
+                    android:fontFamily="@font/outfit"
+                    android:hint="Password"
+                    android:inputType="textPassword"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="48dp"
+                    android:textColor="@android:color/black"
+                    android:textColorHint="#888888" />
+
+                <ImageButton
+                    android:id="@+id/passwordToggle"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="16dp"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="Toggle password visibility"
+                    android:src="@drawable/password_eyeopen" />
+            </RelativeLayout>
+
 
             <!-- Confirm Password -->
-            <EditText
-                android:id="@+id/confirmPasswordInput"
+            <RelativeLayout
                 android:layout_width="319dp"
                 android:layout_height="50dp"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="8dp"
-                android:layout_marginBottom="20dp"
-                android:background="@drawable/edittext_background"
-                android:fontFamily="@font/outfit"
-                android:hint="Confirm Password"
-                android:inputType="textPassword"
-                android:padding="12dp"
-                android:textColor="@android:color/black"
-                android:textColorHint="#888888" />
+                android:layout_marginBottom="20dp">
+
+                <EditText
+                    android:id="@+id/confirmPasswordInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/edittext_background"
+                    android:fontFamily="@font/outfit"
+                    android:hint="Confirm Password"
+                    android:inputType="textPassword"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="48dp"
+                    android:textColor="@android:color/black"
+                    android:textColorHint="#888888" />
+
+                <ImageButton
+                    android:id="@+id/confirmPasswordToggle"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="16dp"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="Toggle confirm password visibility"
+                    android:src="@drawable/password_eyeopen" />
+            </RelativeLayout>
+
 
 
             <!-- Create Button -->
@@ -118,10 +154,9 @@
                 android:background="@drawable/loginbutton_background"
                 android:backgroundTint="#222222"
                 android:fontFamily="@font/inter_medium"
+                android:text="Next"
                 android:textAllCaps="false"
-                android:text="Create"
-                android:textColor="@android:color/white"
-                />
+                android:textColor="@android:color/white" />
 
             <LinearLayout
                 android:layout_width="wrap_content"

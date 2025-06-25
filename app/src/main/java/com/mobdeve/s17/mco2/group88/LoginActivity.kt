@@ -28,10 +28,6 @@ class LoginActivity : AppCompatActivity() {
         val passwordInput: EditText = findViewById(R.id.passwordInput)
         val passwordToggle: ImageButton = findViewById(R.id.passwordToggle)
 
-        loginButton.setOnClickListener {
-            showAccountCreatedDialog()
-        }
-
         forgotPasswordText.setOnClickListener {
             startActivity(Intent(this, ForgotPasswordActivity::class.java))
         }
@@ -54,19 +50,4 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun showAccountCreatedDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.popup_accountcreated, null)
-        val dialogBuilder = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .setCancelable(false)
-
-        val alertDialog = dialogBuilder.create()
-        alertDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        alertDialog.show()
-
-        val getStartedButton = dialogView.findViewById<Button>(R.id.btnGetStarted)
-        getStartedButton.setOnClickListener {
-            alertDialog.dismiss()
-        }
-    }
 }
