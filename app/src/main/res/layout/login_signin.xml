@@ -25,20 +25,10 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <!-- Back Arrow -->
-        <ImageButton
-            android:id="@+id/signupBackButton"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_gravity="start"
-            android:layout_marginTop="16dp"
-            android:backgroundTint="#00FFFFFF"
-            android:src="@drawable/back_arrow" />
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="0dp"
+            android:layout_marginTop="35dp"
             android:fontFamily="@font/newsreader"
             android:text="Sign in"
             android:textColor="#FFFFFF"

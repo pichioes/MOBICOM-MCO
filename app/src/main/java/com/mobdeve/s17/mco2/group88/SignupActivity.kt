@@ -28,7 +28,7 @@ class SignupActivity : AppCompatActivity() {
         val loginHereLink = findViewById<TextView>(R.id.loginHereLink)
         val signupBackButton = findViewById<ImageButton>(R.id.signupBackButton)
 
-        // Toggle main password visibility
+        // Toggle password visibility
         passwordToggle.setOnClickListener {
             val pos = passwordInput.selectionStart
             isPasswordVisible = !isPasswordVisible
@@ -62,21 +62,11 @@ class SignupActivity : AppCompatActivity() {
             finish()
         }
 
-        // Show popup on account creation
+        // ✅ Directly go to CreateProfileActivity
         createAccountButton.setOnClickListener {
-            val dialogView = layoutInflater.inflate(R.layout.popup_accountcreated, null)
-            val dialog = android.app.AlertDialog.Builder(this)
-                .setView(dialogView)
-                .setCancelable(false)
-                .create()
-
-            val okButton = dialogView.findViewById<Button>(R.id.btnGetStarted)
-            okButton.setOnClickListener {
-                dialog.dismiss()
-                // startActivity(Intent(this, CreateProfileActivity::class.java))
-            }
-
-            dialog.show()
+            val intent = Intent(this@SignupActivity, CreateProfileActivity::class.java)
+            startActivity(intent)
+            finish()
         }
     }
 }
