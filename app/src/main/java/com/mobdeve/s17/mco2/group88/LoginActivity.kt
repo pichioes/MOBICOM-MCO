@@ -1,6 +1,5 @@
 package com.mobdeve.s17.mco2.group88
 
-import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.text.method.PasswordTransformationMethod
@@ -28,14 +27,17 @@ class LoginActivity : AppCompatActivity() {
         val passwordInput: EditText = findViewById(R.id.passwordInput)
         val passwordToggle: ImageButton = findViewById(R.id.passwordToggle)
 
+        // Navigate to ForgotPassword
         forgotPasswordText.setOnClickListener {
             startActivity(Intent(this, ForgotPasswordActivity::class.java))
         }
 
+        // Navigate to Signup
         signUpText.setOnClickListener {
             startActivity(Intent(this, SignupActivity::class.java))
         }
 
+        // Toggle password visibility
         passwordToggle.setOnClickListener {
             val position = passwordInput.selectionStart
             if (isPasswordVisible) {
@@ -48,6 +50,11 @@ class LoginActivity : AppCompatActivity() {
             passwordInput.setSelection(position)
             isPasswordVisible = !isPasswordVisible
         }
-    }
 
+        loginButton.setOnClickListener {
+            val intent = Intent(this,HomeActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+        }
+    }
 }

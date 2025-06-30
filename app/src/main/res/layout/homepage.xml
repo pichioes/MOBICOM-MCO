@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#24557D"
+    android:padding="16dp">
+
+    <!-- Greeting -->
+    <TextView
+        android:id="@+id/greetingText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Good Morning,\nMaxene Balbastro"
+        android:textSize="20sp"
+        android:textColor="#FFFFFF"
+        android:fontFamily="@font/outfit"
+        android:textStyle="bold" />
+
+    <!-- Week bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="S M T W T F S"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:fontFamily="@font/outfit"/>
+    </LinearLayout>
+
+    <!-- Native Circular Progress -->
+
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/composeProgress"
+        android:layout_width="280dp"
+        android:layout_height="280dp"
+        android:layout_gravity="center"
+        android:background="#00FFFFFF"
+        android:backgroundTint="#00FFFFFF"/>
+
+
+    <!-- Highlights -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="3 Day Streak"
+            android:textColor="#FFFFFF"
+            android:layout_margin="8dp"
+            android:fontFamily="@font/outfit"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="46.51% of Goal"
+            android:textColor="#FFFFFF"
+            android:layout_margin="8dp"
+            android:fontFamily="@font/outfit"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="30 min Until Next Sip"
+            android:textColor="#FFFFFF"
+            android:layout_margin="8dp"
+            android:fontFamily="@font/outfit"/>
+    </LinearLayout>
+
+    <!-- Today's Records -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Today's Record"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/outfit"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recordsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="208dp"
+        android:layout_marginTop="8dp"
+        android:layout_weight="1"
+        android:background="#284A6B" />
+</LinearLayout>
