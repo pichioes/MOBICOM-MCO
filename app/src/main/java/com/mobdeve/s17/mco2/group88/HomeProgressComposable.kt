@@ -5,7 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -22,17 +22,17 @@ import androidx.compose.ui.unit.sp
 import kotlin.math.cos
 import kotlin.math.sin
 import androidx.compose.ui.platform.LocalDensity
+import com.mobdeve.s17.mco2.group88.R
 
 @Composable
-fun CircularProgressWithCap(
-    progress: Float,
-    goalText: String = "Goal 2150 ml",
-    currentTextNumber: String = "1000"
-) {
+    fun CircularProgressWithCap(goalAmount: Int = 2150) {
     val strokeWidthDp = 23.dp
     val sizeDp = 260.dp
     val strokeWidthPx = with(LocalDensity.current) { strokeWidthDp.toPx() }
     val outfit = FontFamily(Font(R.font.outfit))
+
+    var currentIntake by remember { mutableStateOf(0) }
+    val progress = (currentIntake.toFloat() / goalAmount).coerceIn(0f, 1f)
 
     Box(
         modifier = Modifier.size(sizeDp),
@@ -58,61 +58,35 @@ fun CircularProgressWithCap(
                 style = Stroke(width = strokeWidthPx, cap = StrokeCap.Round)
             )
 
-            // Progress arc (counter-clockwise: negative sweep)
+            // Progress arc (counter-clockwise)
             drawArc(
                 brush = Brush.linearGradient(listOf(Color(0xFF64B5F6), Color(0xFF2196F3))),
                 startAngle = -90f,
-                sweepAngle = -360f * progress,  // negative for counter-clockwise
+                sweepAngle = -360f * progress,
                 useCenter = false,
                 style = Stroke(width = strokeWidthPx, cap = StrokeCap.Round)
             )
-
-            // Calculate knob position aligned on stroke center
-            val angle = Math.toRadians((-360 * progress - 90).toDouble())
-            val knobRadius = (size.minDimension / 2) - (strokeWidthPx / 2f) + 18f
-            val knobX = arcRect.center.x + knobRadius * cos(angle).toFloat()
-            val knobY = arcRect.center.y + knobRadius * sin(angle).toFloat()
-            val knobCenter = Offset(knobX, knobY)
-
-            // Draw end knob: blue outer + white inner
-            drawCircle(
-                color = Color(0xFF64B5F6),
-                radius = strokeWidthPx * 1.0f,
-                center = knobCenter
-            )
-            drawCircle(
-                color = Color.White,
-                radius = strokeWidthPx * 0.6f,
-                center = knobCenter
-            )
-
-
-            // White inner circle
-            drawCircle(
-                color = Color.White,
-                radius = strokeWidthPx * 0.6f,
-                center = knobCenter
-            )
         }
 
-        // Center number
+        // Number display
         Text(
-            text = currentTextNumber,
+            text = currentIntake.toString(),
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
             color = Color.White,
             fontFamily = outfit
+
         )
 
         // Goal text
         Box(
             modifier = Modifier
                 .align(Alignment.Center)
-                .padding(top = 48.dp),  // spacing below number
+                .padding(top = 48.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = goalText,
+                text = "Goal $goalAmount ml",
                 fontSize = 14.sp,
                 color = Color.White.copy(alpha = 0.7f),
                 fontFamily = outfit
@@ -132,9 +106,10 @@ fun CircularProgressWithCap(
                 tint = Color.Unspecified,
                 modifier = Modifier
                     .size(72.dp)
-                    .clickable { /* handle click */ }
+                    .clickable {
+                        currentIntake += 250 // Add 250 ml per click (or any step you want)
+                    }
             )
         }
     }
 }
-
