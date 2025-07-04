@@ -43,47 +43,160 @@
 
     <!-- Native Circular Progress -->
 
-    <androidx.compose.ui.platform.ComposeView
-        android:id="@+id/composeProgress"
-        android:layout_width="280dp"
-        android:layout_height="280dp"
-        android:layout_gravity="center"
-        android:background="#00FFFFFF"
-        android:backgroundTint="#00FFFFFF"/>
-
 
     <!-- Highlights -->
+    <!-- Today's Records -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/composeProgress"
+            android:layout_width="280dp"
+            android:layout_height="280dp"
+            android:layout_gravity="center"
+            android:background="#00FFFFFF"
+            android:backgroundTint="#00FFFFFF" />
+
+        <ImageButton
+            android:id="@+id/imageButton"
+            android:layout_width="59dp"
+            android:layout_height="49dp"
+            android:layout_marginStart="290dp"
+            android:layout_marginTop="250dp"
+            android:backgroundTint="#00FFFFFF"
+            app:srcCompat="@drawable/switch_cup" />
+    </FrameLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Highlights"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/outfit"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
-        android:layout_marginTop="16dp">
+        android:layout_marginTop="16dp"
+        android:weightSum="3">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <!-- Streak box -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="3 Day Streak"
-            android:textColor="#FFFFFF"
-            android:layout_margin="8dp"
-            android:fontFamily="@font/outfit"/>
+            android:background="#284A6B"
+            android:padding="12dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_margin="4dp"
+            android:clipToOutline="true">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="46.51% of Goal"
-            android:textColor="#FFFFFF"
-            android:layout_margin="8dp"
-            android:fontFamily="@font/outfit"/>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3"
+                    android:textSize="16sp"
+                    android:textColor="#FFFFFF"
+                    android:fontFamily="@font/outfit"/>
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/streak_flame" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Day Streak"
+                android:textColor="#ABBAC8"
+                android:textSize="12sp"
+                android:fontFamily="@font/outfit"/>
+        </LinearLayout>
+
+        <!-- Goal % box -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="30 min Until Next Sip"
-            android:textColor="#FFFFFF"
-            android:layout_margin="8dp"
-            android:fontFamily="@font/outfit"/>
+            android:background="#284A6B"
+            android:padding="12dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_margin="4dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/outfit"
+                    android:text="46.51"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp" />
+
+                <ImageView
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:src="@drawable/percentage" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Of Goal"
+                android:textColor="#ABBAC8"
+                android:textSize="12sp"
+                android:fontFamily="@font/outfit"/>
+        </LinearLayout>
+
+        <!-- Next Sip box -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:background="#284A6B"
+            android:padding="12dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_margin="4dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="30 Mins"
+                android:textSize="16sp"
+                android:textColor="#FFFFFF"
+                android:fontFamily="@font/outfit"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Until Next Sip"
+                android:textColor="#ABBAC8"
+                android:textSize="12sp"
+                android:fontFamily="@font/outfit"/>
+        </LinearLayout>
+
     </LinearLayout>
+
 
     <!-- Today's Records -->
     <TextView
@@ -99,7 +212,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recordsRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="208dp"
+        android:layout_height="178dp"
         android:layout_marginTop="8dp"
         android:layout_weight="1"
         android:background="#284A6B" />
