@@ -5,6 +5,8 @@ import android.widget.EditText
 import android.widget.Spinner
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
+import android.widget.Button
 
 class EditProfile : AppCompatActivity() {
 
@@ -49,6 +51,14 @@ class EditProfile : AppCompatActivity() {
         genderGroup.setOnCheckedChangeListener { _, _ ->
             updateGenderColors()
         }
+
+        val saveButton = findViewById<Button>(R.id.save_button)
+        saveButton.setOnClickListener {
+            val intent = Intent(this, ProfileMainPage::class.java)
+            startActivity(intent)
+            finish() // Optional: prevents returning to EditProfile via back button
+        }
+
     }
 
     private fun setupSpinner(spinner: Spinner, items: List<String>) {

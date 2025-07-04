@@ -17,9 +17,13 @@
         android:textSize="20sp"
         android:textColor="#FFFFFF"
         android:fontFamily="@font/outfit"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackground" />
 
     <!-- Week bar -->
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -99,4 +103,5 @@
         android:layout_marginTop="8dp"
         android:layout_weight="1"
         android:background="#284A6B" />
+
 </LinearLayout>
