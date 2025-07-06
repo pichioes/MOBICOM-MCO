@@ -19,10 +19,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlin.math.cos
-import kotlin.math.sin
 import androidx.compose.ui.platform.LocalDensity
-import com.mobdeve.s17.mco2.group88.R
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 
 @Composable
     fun CircularProgressWithCap(goalAmount: Int = 2150) {
@@ -100,14 +100,20 @@ import com.mobdeve.s17.mco2.group88.R
                 .padding(top = 150.dp),
             contentAlignment = Alignment.Center
         ) {
+            val interactionSource = remember { MutableInteractionSource() }
+            val isPressed by interactionSource.collectIsPressedAsState()
+
             Icon(
                 painter = painterResource(id = R.drawable.water_drop),
                 contentDescription = "Add Water",
-                tint = Color.Unspecified,
+                tint = if (isPressed) Color(0xFF5091C5).copy(alpha = 0.8f) else Color.Unspecified,
                 modifier = Modifier
                     .size(72.dp)
-                    .clickable {
-                        currentIntake += 250 // Add 250 ml per click (or any step you want)
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null
+                    ) {
+                        currentIntake += 250
                     }
             )
         }

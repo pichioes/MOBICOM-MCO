@@ -8,44 +8,37 @@
     android:background="#24557D"
     android:padding="16dp">
 
-    <!-- Greeting -->
+    <!-- Greeting TextView -->
     <TextView
         android:id="@+id/greetingText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Good Morning,\nMaxene Balbastro"
-        android:textSize="20sp"
-        android:textColor="#FFFFFF"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="2dp"
         android:fontFamily="@font/outfit"
-        android:textStyle="bold"
-        android:clickable="true"
-        android:focusable="true"
-        android:background="?attr/selectableItemBackground" />
+        android:text="Good Morning,"
+        android:textColor="#132E4F"
+        android:textSize="14sp"
+        android:textStyle="bold" />
 
-    <!-- Week bar -->
-
-    <LinearLayout
-        android:layout_width="match_parent"
+    <!-- User Name TextView -->
+    <TextView
+        android:id="@+id/userName"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="16dp">
+        android:fontFamily="@font/outfit"
+        android:text="Maxene Balbastro"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="S M T W T F S"
-            android:textColor="#FFFFFF"
-            android:textSize="16sp"
-            android:fontFamily="@font/outfit"/>
-    </LinearLayout>
+    <!-- Week Bar / Progress Bar Composable -->
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/WeekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
-    <!-- Native Circular Progress -->
-
-
-    <!-- Highlights -->
-    <!-- Today's Records -->
+    <!-- Circular Progress with Button -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -68,6 +61,7 @@
             app:srcCompat="@drawable/switch_cup" />
     </FrameLayout>
 
+    <!-- Highlights Section -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -88,29 +82,30 @@
 
         <!-- Streak box -->
         <LinearLayout
+            android:id="@+id/Streakbox"
             android:layout_width="0dp"
-            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:background="#284A6B"
-            android:padding="12dp"
-            android:orientation="vertical"
-            android:gravity="center"
             android:layout_margin="4dp"
-            android:clipToOutline="true">
+            android:layout_weight="1"
+            android:background="@drawable/rounded_box"
+            android:clipToOutline="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="12dp">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/outfit"
                     android:text="3"
-                    android:textSize="16sp"
                     android:textColor="#FFFFFF"
-                    android:fontFamily="@font/outfit"/>
+                    android:textSize="16sp" />
 
                 <ImageView
                     android:layout_width="20dp"
@@ -121,10 +116,10 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/outfit"
                 android:text="Day Streak"
                 android:textColor="#ABBAC8"
-                android:textSize="12sp"
-                android:fontFamily="@font/outfit"/>
+                android:textSize="12sp" />
         </LinearLayout>
 
         <!-- Goal % box -->
@@ -132,7 +127,7 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:background="#284A6B"
+            android:background="@drawable/rounded_box"
             android:padding="12dp"
             android:orientation="vertical"
             android:gravity="center"
@@ -147,6 +142,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:paddingRight="5dp"
                     android:fontFamily="@font/outfit"
                     android:text="46.51"
                     android:textColor="#FFFFFF"
@@ -172,7 +168,7 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:background="#284A6B"
+            android:background="@drawable/rounded_box"
             android:padding="12dp"
             android:orientation="vertical"
             android:gravity="center"
@@ -197,7 +193,6 @@
 
     </LinearLayout>
 
-
     <!-- Today's Records -->
     <TextView
         android:layout_width="wrap_content"
@@ -209,12 +204,21 @@
         android:layout_marginTop="16dp"
         android:fontFamily="@font/outfit"/>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recordsRecyclerView"
-        android:layout_width="match_parent"
+    <androidx.cardview.widget.CardView
+        android:layout_width="370dp"
         android:layout_height="178dp"
         android:layout_marginTop="8dp"
-        android:layout_weight="1"
-        android:background="#284A6B" />
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="8dp"
+        app:cardCornerRadius="12dp"
+        app:cardBackgroundColor="#284A6B"
+        app:cardElevation="2dp">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recordsRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="0dp" />
+    </androidx.cardview.widget.CardView>
 
 </LinearLayout>
