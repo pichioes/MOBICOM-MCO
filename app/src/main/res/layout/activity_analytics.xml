@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#294267"
+    android:orientation="vertical">
+
+    <!-- Calendar Layout -->
+    <LinearLayout
+        android:id="@+id/calendarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <include layout="@layout/analytics_calendar" />
+
+    </LinearLayout>
+
+    <!-- Graph Layout -->
+    <LinearLayout
+        android:id="@+id/graphLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <!-- Weekly Graph Layout -->
+        <LinearLayout
+            android:id="@+id/weeklyGraphLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="visible">
+
+            <include layout="@layout/analytics_graph_weekly" />
+
+        </LinearLayout>
+
+        <!-- Monthly Graph Layout -->
+        <LinearLayout
+            android:id="@+id/monthlyGraphLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <include layout="@layout/analytics_graph_monthly" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

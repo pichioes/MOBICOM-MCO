@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/analyticsCalendarLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#294267"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Toggle Buttons -->
+    <LinearLayout
+        android:id="@+id/toggleLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/calendarToggleBtn"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="Calendar" />
+
+        <Button
+            android:id="@+id/analyticsToggleBtn"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="Analytics" />
+    </LinearLayout>
+
+    <!-- Calendar -->
+    <com.prolificinteractive.materialcalendarview.MaterialCalendarView
+        android:id="@+id/calendarView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/toggle_bg" />
+
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/calendarProgressComposeView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="16dp"/>
+
+    <!-- Water Report -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="227dp"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/report_card_bg"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/weeklyAverageText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Weekly Average: 400ml / Day" />
+
+
+        <TextView
+            android:id="@+id/monthlyAverageText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Monthly Average: 540ml / Day" />
+
+
+        <TextView
+            android:id="@+id/averageCompletionText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Average Completion: 76%" />
+
+
+        <TextView
+            android:id="@+id/drinkFrequencyText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Drink Frequency: 4 Times / Day" />
+
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/analyticsGraphWeeklyLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#294267"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Chart Toggle -->
+    <LinearLayout
+        android:id="@+id/graphTypeToggle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/weeklyGraphBtn"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="Weekly" />
+
+        <Button
+            android:id="@+id/monthlyGraphBtn"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="Monthly" />
+    </LinearLayout>
+
+    <!-- Chart -->
+    <com.jjoe64.graphview.GraphView
+        android:id="@+id/weeklyGraphView"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/toggle_bg" />
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="227dp"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/report_card_bg"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/weeklyAverageText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Weekly Average: 400ml / Day" />
+        ... />
+
+        <TextView
+            android:id="@+id/monthlyAverageText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Monthly Average: 540ml / Day" />
+        ... />
+
+        <TextView
+            android:id="@+id/averageCompletionText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Average Completion: 76%" />
+        ... />
+
+        <TextView
+            android:id="@+id/drinkFrequencyText"
+            android:layout_width="204dp"
+            android:layout_height="wrap_content"
+            android:text="Drink Frequency: 4 Times / Day" />
+        ... />
+    </LinearLayout>
+</LinearLayout>
