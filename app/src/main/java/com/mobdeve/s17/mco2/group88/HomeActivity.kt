@@ -18,6 +18,12 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.homepage)
 
+        val userNameTextView = findViewById<TextView>(R.id.userName)
+        userNameTextView.setOnClickListener {
+            val intent = Intent(this, ProfileMainPage::class.java)
+            startActivity(intent)
+        }
+
         // Set up ComposeView for WeekBar
         val weekBarComposeView = findViewById<ComposeView>(R.id.WeekBar)
         weekBarComposeView.setContent {
