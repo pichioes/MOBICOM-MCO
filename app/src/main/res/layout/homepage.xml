@@ -37,7 +37,7 @@
     <androidx.compose.ui.platform.ComposeView
         android:id="@+id/WeekBar"
         android:layout_width="match_parent"
-        android:layout_height="74dp"
+        android:layout_height="67dp"
         android:layout_marginBottom="10dp" />
 
     <!-- Circular Progress with Button -->

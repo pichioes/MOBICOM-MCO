@@ -23,9 +23,14 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.runtime.remember
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 @Composable
-    fun CircularProgressWithCap(goalAmount: Int = 2150) {
+fun CircularProgressWithCap(
+    goalAmount: Int = 2150,
+    onWaterIntake: (WaterRecord) -> Unit // Accept the callback
+) {
     val strokeWidthDp = 23.dp
     val sizeDp = 260.dp
     val strokeWidthPx = with(LocalDensity.current) { strokeWidthDp.toPx() }
@@ -75,7 +80,6 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
             fontWeight = FontWeight.Bold,
             color = Color.White,
             fontFamily = outfit
-
         )
 
         // Goal text
@@ -114,8 +118,21 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
                         indication = null
                     ) {
                         currentIntake += 250
+
+                        // Get the current time in 12-hour format
+                        val currentTime = LocalTime.now()
+                        val formatter = DateTimeFormatter.ofPattern("hh:mm a")
+                        val formattedTime = currentTime.format(formatter)
+
+                        // Create a new water record
+                        val record = WaterRecord(time = formattedTime, amount = "250 ml")
+
+                        // Trigger the onWaterIntake callback
+                        onWaterIntake(record)
                     }
             )
         }
     }
 }
+
+

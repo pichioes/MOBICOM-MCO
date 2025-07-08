@@ -41,7 +41,7 @@ fun WeekBar(userProgress: Array<Int>) {
         modifier = Modifier
             .fillMaxWidth()
             .background(ComposeColor(0xFF284A6B), shape = RoundedCornerShape(12.dp)) // Apply background color with rounded corners
-            .padding(8.dp) // Padding inside the rounded box
+            .padding(3.dp) // Padding inside the rounded box
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),

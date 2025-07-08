@@ -1,0 +1,39 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#284A6B"
+    android:padding="15dp"
+    android:gravity="center_vertical">
+
+    <!-- Water Drop Icon -->
+    <ImageView
+        android:id="@+id/waterDropImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:contentDescription="Water Drop"
+        android:src="@drawable/record_glass" />
+
+    <!-- Time TextView -->
+    <TextView
+        android:id="@+id/timeTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:fontFamily="@font/outfit"
+        android:layout_marginEnd="16dp" />
+
+    <!-- Amount TextView (aligned to the right) -->
+    <TextView
+        android:id="@+id/amountTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:fontFamily="@font/outfit"
+        android:gravity="end" />
+</LinearLayout>
