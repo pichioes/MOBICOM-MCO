@@ -1,5 +1,5 @@
 // AnalyticsActivity.kt
-package com.mobdeve.s17.mco2.group88
+/* package com.mobdeve.s17.mco2.group88
 
 import android.graphics.Color
 import android.os.Bundle
@@ -315,4 +315,4 @@ class AnalyticsActivity : AppCompatActivity() {
             CalendarProgressComposable(records = selectedDateRecords)
         }
     }
-}
+} */
