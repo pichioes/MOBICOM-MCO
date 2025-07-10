@@ -1,6 +1,5 @@
-<!-- res/drawable/rounded_box_background.xml -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
-    <solid android:color="#284A6B" />
-    <corners android:radius="12dp" />
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#396388"/> <!-- Button Color -->
+    <corners android:radius="10dp"/> <!-- Rounded corners with radius -->
 </shape>

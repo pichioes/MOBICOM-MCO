@@ -54,7 +54,7 @@
             android:backgroundTint="#00FFFFFF" />
 
         <ImageButton
-            android:id="@+id/imageButton"
+            android:id="@+id/switchcup"
             android:layout_width="59dp"
             android:layout_height="49dp"
             android:layout_marginStart="290dp"
