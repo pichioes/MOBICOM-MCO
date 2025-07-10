@@ -6,6 +6,7 @@
 
 
     <color name="secondary">#03DAC6</color>
+    <color name="colorPrimary">#396388</color>
     <color name="colorSecondary">#03DAC6</color>
 
     <color name="purple_200">#BBBBBB</color>

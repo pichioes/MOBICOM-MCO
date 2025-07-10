@@ -5,12 +5,13 @@ import android.content.Intent
 import android.widget.TextView
 import android.widget.ImageButton
 import android.widget.Button
+import android.widget.EditText
+import android.widget.Toast
+import android.app.Dialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.platform.ComposeView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import android.app.Dialog
-import android.widget.Toast
 import android.widget.GridLayout
 import java.text.SimpleDateFormat
 import java.util.*
@@ -24,6 +25,7 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.homepage)
 
+        // Profile redirection
         val userNameTextView = findViewById<TextView>(R.id.userName)
         userNameTextView.setOnClickListener {
             // Open ProfileMainPage
@@ -41,11 +43,14 @@ class HomeActivity : AppCompatActivity() {
         // Set up ComposeView for CircularProgressWithCap (This is where HomeProgress is added)
         val circularProgressComposeView = findViewById<ComposeView>(R.id.composeProgress)
         circularProgressComposeView.setContent {
-            CircularProgressWithCap(onWaterIntake = { record ->
-                // Handle water intake here if needed
-                waterRecords.add(0, record)
-                updateRecyclerView()
-            })
+            CircularProgressWithCap(
+                goalAmount = 2150, // Set goal here
+                onWaterIntake = { record ->
+                    // Handle water intake here if needed
+                    waterRecords.add(0, record) // Add water record to the list
+                    updateRecyclerView()
+                }
+            )
         }
 
         // Set up RecyclerView for displaying water intake records
@@ -68,27 +73,24 @@ class HomeActivity : AppCompatActivity() {
         dialog.setCancelable(true)
 
         // Close button functionality
-        val closeButton = dialog.findViewById<ImageButton>(R.id.closeButton)
+        val closeButton = dialog.findViewById<ImageButton>(R.id.switchCloseButton)
         closeButton.setOnClickListener {
             dialog.dismiss() // Dismiss the dialog on close
         }
 
-        // Handle cup size button clicks
-        val gridLayout = dialog.findViewById<GridLayout>(R.id.gridLayout)
-        gridLayout.setOnClickListener { view ->
-            val selectedCup = when (view.id) {
-                R.id.btn_100ml -> 100
-                R.id.btn_125ml -> 125
-                R.id.btn_150ml -> 150
-                R.id.btn_175ml -> 175
-                R.id.btn_200ml -> 200
-                R.id.btn_300ml -> 300
-                R.id.btn_400ml -> 400
-                else -> 0 // Custom
-            }
+        // Set click listeners for individual cup size buttons
+        setCupSizeButtonClickListener(dialog, R.id.btn_100ml, 100)
+        setCupSizeButtonClickListener(dialog, R.id.btn_125ml, 125)
+        setCupSizeButtonClickListener(dialog, R.id.btn_150ml, 150)
+        setCupSizeButtonClickListener(dialog, R.id.btn_175ml, 175)
+        setCupSizeButtonClickListener(dialog, R.id.btn_200ml, 200)
+        setCupSizeButtonClickListener(dialog, R.id.btn_300ml, 300)
+        setCupSizeButtonClickListener(dialog, R.id.btn_400ml, 400)
 
-            selectedCupSize = selectedCup // Save the selected cup size
-            Toast.makeText(this, "Selected: $selectedCupSize ml", Toast.LENGTH_SHORT).show()
+        // Handle "Customize" button separately
+        val customizeButton = dialog.findViewById<ImageButton>(R.id.btn_customize)
+        customizeButton.setOnClickListener {
+            showCustomizePopup() // Show the popup to input a custom size
         }
 
         // Confirm button functionality
@@ -102,6 +104,60 @@ class HomeActivity : AppCompatActivity() {
         }
 
         dialog.show() // Show the dialog
+    }
+
+    private fun showCustomizePopup() {
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.popup_customizecup) // Inflate the custom popup layout
+        dialog.setCancelable(true)
+
+        // Close button functionality
+        val closeButton = dialog.findViewById<ImageButton>(R.id.customizeCloseButton)
+        closeButton.setOnClickListener {
+            dialog.dismiss() // Dismiss the dialog on close
+        }
+
+        // Confirm button functionality
+        val confirmButton = dialog.findViewById<Button>(R.id.confirmButton)
+        val cupSizeInput = dialog.findViewById<EditText>(R.id.cupSizeInput)
+
+        confirmButton.setOnClickListener {
+            val customCupSize = cupSizeInput.text.toString().toIntOrNull()
+
+            if (customCupSize != null && customCupSize > 0) {
+                selectedCupSize = customCupSize
+                Toast.makeText(this, "Custom Cup Size Confirmed: $selectedCupSize ml", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Please enter a valid cup size", Toast.LENGTH_SHORT).show()
+            }
+
+            // Close the custom popup
+            dialog.dismiss()
+        }
+
+        dialog.show() // Show the custom dialog
+    }
+
+    // Helper function to set the click listener for each cup size button
+    private fun setCupSizeButtonClickListener(dialog: Dialog, buttonId: Int, cupSize: Int) {
+        val button = dialog.findViewById<ImageButton>(buttonId)
+        button.setOnClickListener {
+            selectedCupSize = cupSize // Save the selected cup size
+            Toast.makeText(this, "Selected: $selectedCupSize ml", Toast.LENGTH_SHORT).show()
+
+            // Optionally, visually indicate which button was selected (change the background or color)
+            highlightSelectedButton(dialog, button)
+        }
+    }
+
+    // Highlight the selected button (optional)
+    private fun highlightSelectedButton(dialog: Dialog, selectedButton: ImageButton) {
+        val gridLayout = dialog.findViewById<GridLayout>(R.id.gridLayout)
+        for (i in 0 until gridLayout.childCount) {
+            val button = gridLayout.getChildAt(i) as ImageButton
+            button.setBackgroundResource(0)  // Reset background
+        }
+        selectedButton.setBackgroundColor(resources.getColor(R.color.colorPrimary))
     }
 
     private fun updateRecyclerView() {
