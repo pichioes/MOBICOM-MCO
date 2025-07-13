@@ -16,4 +16,7 @@
     <color name="white">#FFFFFFFF</color>
     <color name="textcolor">#62CDFA</color>
     <color name="background">#396388</color>
+    <color name="colorSelected">#64B5F6</color>
+    <color name="colorUnselected">#FFFFFF</color>
+
 </resources>
