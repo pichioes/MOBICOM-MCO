@@ -140,7 +140,7 @@
             <Spinner
                 android:id="@+id/spinner2"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="45dp"
                 android:background="@drawable/inputtext"
                 android:layout_marginTop="8dp" />
         </LinearLayout>
@@ -166,7 +166,7 @@
             <Spinner
                 android:id="@+id/spinner3"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="45dp"
                 android:background="@drawable/inputtext"
                 android:layout_marginTop="8dp" />
         </LinearLayout>
@@ -191,7 +191,7 @@
             <Spinner
                 android:id="@+id/spinner4"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="45dp"
                 android:background="@drawable/inputtext"
                 android:layout_marginTop="8dp" />
         </LinearLayout>

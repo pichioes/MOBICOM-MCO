@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
 import android.widget.Button
 import android.view.View
-import androidx.appcompat.widget.SwitchCompat
 
 class EditProfile : AppCompatActivity() {
 
@@ -64,9 +63,25 @@ class EditProfile : AppCompatActivity() {
         // Save Button: When clicked, it saves the data and navigates back to ProfileMainPage
         val saveButton = findViewById<Button>(R.id.save_button)
         saveButton.setOnClickListener {
-            // You can use the data entered in the fields here
-            // For example, firstNameField.text.toString() to get the first name
+            // Capture input data
+            val firstName = firstNameField.text.toString()
+            val lastName = lastNameField.text.toString()
+            val email = emailField.text.toString()
+            val age = ageSpinner.selectedItem.toString()  // Get selected age
+            val height = heightSpinner.selectedItem.toString()  // Get selected height
+            val weight = weightSpinner.selectedItem.toString()  // Get selected weight
+
+            // Create an Intent to navigate back to ProfileMainPage and pass the updated data
             val intent = Intent(this, ProfileMainPage::class.java)
+            intent.putExtra("firstName", firstName)
+            intent.putExtra("lastName", lastName)
+            intent.putExtra("email", email)
+            intent.putExtra("gender", selectedGender)
+            intent.putExtra("age", age)
+            intent.putExtra("height", height)
+            intent.putExtra("weight", weight)
+
+            // Start ProfileMainPage and pass the data
             startActivity(intent)
             finish()  // Optional: prevents returning to EditProfile via back button
         }

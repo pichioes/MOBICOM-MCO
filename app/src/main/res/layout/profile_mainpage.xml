@@ -14,71 +14,65 @@
         android:layout_weight="1"
         android:orientation="vertical">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="252dp"
-        android:orientation="horizontal"
-        android:visibility="visible">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="252dp"
+            android:orientation="horizontal"
+            android:visibility="visible">
 
-        <FrameLayout
-            android:layout_width="205dp"
-            android:layout_height="match_parent">
-
-            <ImageView
-                android:id="@+id/imageView2"
-                android:layout_width="152dp"
-                android:layout_height="234dp"
-                android:layout_gravity="center|top"
-                android:src="@drawable/profiletag" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
+            <FrameLayout
+                android:layout_width="205dp"
+                android:layout_height="match_parent">
 
                 <ImageView
-                    android:id="@+id/imageView4"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="40dp"
-                    android:adjustViewBounds="true"
-                    android:background="@drawable/circle_mask"
-                    android:clipToOutline="true"
-                    android:src="@drawable/profile_pic" />
+                    android:id="@+id/imageView2"
+                    android:layout_width="152dp"
+                    android:layout_height="234dp"
+                    android:layout_gravity="center|top"
+                    android:src="@drawable/profiletag" />
 
-                <TextView
-                    android:id="@+id/textView10"
-                    android:layout_width="116dp"
-                    android:layout_height="51dp"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="7dp"
-                    android:fontFamily="sans-serif-black"
-                    android:text="Lianne Balbastro"
-                    android:textAlignment="center"
-                    android:textAppearance="@android:style/TextAppearance.Material.Medium"
-                    android:textColor="#3A3838" />
-            </LinearLayout>
-        </FrameLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
 
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+                    <ImageView
+                        android:id="@+id/imageView4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="40dp"
+                        android:adjustViewBounds="true"
+                        android:background="@drawable/circle_mask"
+                        android:clipToOutline="true"
+                        android:src="@drawable/profile_pic" />
+
+                    <TextView
+                        android:id="@+id/textView10"
+                        android:layout_width="116dp"
+                        android:layout_height="51dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="7dp"
+                        android:fontFamily="@font/outfit"
+                        android:text="Lianne Balbastro"
+                        android:textAlignment="center"
+                        android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                        android:textColor="#3A3838" />
+                </LinearLayout>
+            </FrameLayout>
+
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical">
-
-                <Space
-                    android:layout_width="match_parent"
-                    android:layout_height="25dp" />
+                android:orientation="vertical"
+                android:paddingTop="15dp">
 
                 <TextView
                     android:id="@+id/textView6"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-medium"
+                    android:fontFamily="@font/outfit"
                     android:text="Weight"
                     android:textColor="@color/textcolor" />
 
@@ -87,42 +81,36 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
-                    android:fontFamily="sans-serif"
+                    android:fontFamily="@font/outfit"
                     android:text="120lbs"
                     android:textColor="@color/white" />
-
-                <Space
-                    android:layout_width="match_parent"
-                    android:layout_height="12dp" />
 
                 <TextView
                     android:id="@+id/textView4"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-medium"
+                    android:fontFamily="@font/outfit"
                     android:text="Height"
-                    android:textColor="@color/textcolor" />
+                    android:textColor="@color/textcolor"
+                    android:paddingTop="15dp" />
 
                 <TextView
                     android:id="@+id/textView3"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
-                    android:fontFamily="sans-serif"
+                    android:fontFamily="@font/outfit"
                     android:text="165cm"
                     android:textColor="@color/white" />
-
-                <Space
-                    android:layout_width="match_parent"
-                    android:layout_height="12dp" />
 
                 <TextView
                     android:id="@+id/textView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-medium"
+                    android:fontFamily="@font/outfit"
                     android:text="Goal"
-                    android:textColor="@color/textcolor" />
+                    android:textColor="@color/textcolor"
+                    android:paddingTop="15dp" />
 
                 <TextView
                     android:id="@+id/textView2"
@@ -132,45 +120,39 @@
                     android:text="2150ml"
                     android:textColor="@color/white" />
 
-                <Space
-                    android:layout_width="match_parent"
-                    android:layout_height="12dp"
-                    android:background="#396388" />
-
                 <TextView
                     android:id="@+id/textView7"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-medium"
+                    android:fontFamily="@font/outfit"
                     android:text="Notifications"
-                    android:textColor="@color/textcolor" />
+                    android:textColor="@color/textcolor"
+                    android:paddingTop="12dp" />
 
                 <Switch
                     android:id="@+id/switch1"
                     android:layout_width="48dp"
                     android:layout_height="48dp" />
-            </LinearLayout>
-        </FrameLayout>
-    </LinearLayout>
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="388dp"
-        android:layout_gravity="center">
+            </LinearLayout>
+        </LinearLayout>
+
 
         <LinearLayout
-            android:layout_width="390dp"
-            android:layout_height="301dp"
+            android:layout_width="355dp"
+            android:layout_height="360dp"
             android:layout_gravity="center"
             android:background="@drawable/profileoptions"
             android:clipToOutline="true"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:layout_marginTop="30dp">
 
             <LinearLayout
                 android:id="@+id/myaccount_layer"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:layout_margin="10dp">
 
                 <FrameLayout
                     android:layout_width="65dp"
@@ -192,11 +174,8 @@
                 <LinearLayout
                     android:layout_width="253dp"
                     android:layout_height="match_parent"
-                    android:orientation="vertical">
-
-                    <Space
-                        android:layout_width="match_parent"
-                        android:layout_height="11dp" />
+                    android:orientation="vertical"
+                    android:paddingTop="12dp">
 
                     <TextView
                         android:id="@+id/MyAccountMain"
@@ -215,24 +194,20 @@
                         android:textSize="12sp" />
                 </LinearLayout>
 
-                <FrameLayout
-                    android:layout_width="65dp"
-                    android:layout_height="match_parent">
-
-                    <ImageView
-                        android:id="@+id/MyAccountArrow"
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/forward_arrow" />
-                </FrameLayout>
+                <ImageView
+                    android:id="@+id/MyAccountArrow"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/forward_arrow" />
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/goals_layout"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:layout_margin="5dp">
 
                 <FrameLayout
                     android:layout_width="65dp"
@@ -254,11 +229,8 @@
                 <LinearLayout
                     android:layout_width="253dp"
                     android:layout_height="match_parent"
-                    android:orientation="vertical">
-
-                    <Space
-                        android:layout_width="match_parent"
-                        android:layout_height="11dp" />
+                    android:orientation="vertical"
+                    android:paddingTop="12dp">
 
                     <TextView
                         android:id="@+id/MyGoalsMain"
@@ -276,23 +248,20 @@
                         android:textSize="12sp" />
                 </LinearLayout>
 
-                <FrameLayout
-                    android:layout_width="65dp"
-                    android:layout_height="match_parent">
+                <ImageView
+                    android:id="@+id/MyGoalsArrow"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/forward_arrow" />
 
-                    <ImageView
-                        android:id="@+id/MyGoalsArrow"
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/forward_arrow" />
-                </FrameLayout>
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:layout_margin="5dp">
 
                 <FrameLayout
                     android:layout_width="65dp"
@@ -314,11 +283,8 @@
                 <LinearLayout
                     android:layout_width="253dp"
                     android:layout_height="match_parent"
-                    android:orientation="vertical">
-
-                    <Space
-                        android:layout_width="match_parent"
-                        android:layout_height="11dp" />
+                    android:orientation="vertical"
+                    android:paddingTop="12dp">
 
                     <TextView
                         android:id="@+id/NotifsMain"
@@ -336,24 +302,20 @@
                         android:textSize="12sp" />
                 </LinearLayout>
 
-                <FrameLayout
-                    android:layout_width="65dp"
-                    android:layout_height="match_parent">
-
-                    <ImageView
-                        android:id="@+id/NotifsArrow"
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/forward_arrow" />
-                </FrameLayout>
+                <ImageView
+                    android:id="@+id/NotifsArrow"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/forward_arrow" />
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/logout_layer"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:layout_margin="5dp">
 
                 <FrameLayout
                     android:layout_width="65dp"
@@ -375,11 +337,9 @@
                 <LinearLayout
                     android:layout_width="253dp"
                     android:layout_height="match_parent"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:paddingTop="12dp">
 
-                    <Space
-                        android:layout_width="match_parent"
-                        android:layout_height="11dp" />
 
                     <TextView
                         android:id="@+id/LogoutMain"
@@ -396,24 +356,21 @@
                         android:textSize="12sp" />
                 </LinearLayout>
 
-                <FrameLayout
-                    android:layout_width="65dp"
-                    android:layout_height="match_parent">
 
-                    <ImageView
-                        android:id="@+id/LogoutArrow"
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/forward_arrow" />
-                </FrameLayout>
+                <ImageView
+                    android:id="@+id/LogoutArrow"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/forward_arrow" />
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/deleteacc_layer"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:layout_margin="5dp">
 
                 <FrameLayout
                     android:layout_width="65dp"
@@ -435,11 +392,9 @@
                 <LinearLayout
                     android:layout_width="253dp"
                     android:layout_height="match_parent"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:paddingTop="12dp">
 
-                    <Space
-                        android:layout_width="match_parent"
-                        android:layout_height="11dp" />
 
                     <TextView
                         android:id="@+id/DeleteAccMain"
@@ -456,21 +411,16 @@
                         android:textSize="12sp" />
                 </LinearLayout>
 
-                <FrameLayout
-                    android:layout_width="65dp"
-                    android:layout_height="match_parent">
 
-                    <ImageView
-                        android:id="@+id/DeleteAccArrow"
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/forward_arrow" />
-                </FrameLayout>
+                <ImageView
+                    android:id="@+id/DeleteAccArrow"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/forward_arrow" />
             </LinearLayout>
 
         </LinearLayout>
-    </FrameLayout>
 
     </LinearLayout>
 
