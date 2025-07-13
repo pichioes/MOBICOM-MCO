@@ -48,21 +48,6 @@ class HomeActivity : AppCompatActivity() {
             }
         }
 
-        // Profile redirection
-        val userNameTextView = findViewById<TextView>(R.id.userName)
-        userNameTextView.setOnClickListener {
-            // Open ProfileMainPage
-            val intent = Intent(this, ProfileMainPage::class.java)
-            startActivity(intent)
-        }
-
-        // Analytics redirection
-        val greetingText = findViewById<TextView>(R.id.greetingText)
-        greetingText.setOnClickListener {
-            val intent = Intent(this, AnalyticsActivity::class.java)
-            startActivity(intent)
-        }
-
         // Set up ComposeView for WeekBar
         val weekBarComposeView = findViewById<ComposeView>(R.id.WeekBar)
         weekBarComposeView.setContent {
