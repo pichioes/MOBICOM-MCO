@@ -1,11 +1,13 @@
 // AnalyticsActivity.kt
-/* package com.mobdeve.s17.mco2.group88
+package com.mobdeve.s17.mco2.group88
 
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.platform.ComposeView
 import com.jjoe64.graphview.GraphView
@@ -22,6 +24,7 @@ class AnalyticsActivity : AppCompatActivity() {
     // Sample data - replace with your actual data source
     private val waterRecords = mutableListOf<WaterRecord>()
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_analytics)
@@ -36,6 +39,7 @@ class AnalyticsActivity : AppCompatActivity() {
         setupCalendarProgress()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun initializeSampleData() {
         // Sample data for demonstration - replace with your actual data loading
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -97,6 +101,7 @@ class AnalyticsActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun setupCalendarView() {
         val calendarView = findViewById<MaterialCalendarView>(R.id.calendarView)
 
@@ -110,11 +115,13 @@ class AnalyticsActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun setupGraphs() {
         setupWeeklyGraph()
         setupMonthlyGraph()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun setupWeeklyGraph() {
         val weeklyGraphView = findViewById<GraphView>(R.id.weeklyGraphView)
         val weeklyData = extractWeeklyData()
@@ -144,6 +151,7 @@ class AnalyticsActivity : AppCompatActivity() {
         weeklyGraphView.gridLabelRenderer.gridColor = Color.GRAY
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun setupMonthlyGraph() {
         val monthlyGraphView = findViewById<GraphView>(R.id.monthlyGraphView)
         val monthlyData = extractMonthlyData()
@@ -173,6 +181,7 @@ class AnalyticsActivity : AppCompatActivity() {
         monthlyGraphView.gridLabelRenderer.gridColor = Color.GRAY
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun extractWeeklyData(): List<Float> {
         val result = MutableList(7) { 0f }
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -188,6 +197,7 @@ class AnalyticsActivity : AppCompatActivity() {
         return result
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun extractMonthlyData(): List<Float> {
         val result = MutableList(12) { 0f }
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -207,6 +217,7 @@ class AnalyticsActivity : AppCompatActivity() {
         return result
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun updateWaterReport() {
         val now = LocalDate.now()
         val weekAgo = now.minusDays(6)
@@ -303,6 +314,7 @@ class AnalyticsActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun updateCalendarProgressForDate(date: CalendarDay) {
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         val dateString = LocalDate.of(date.year, date.month, date.day).format(formatter)
@@ -315,4 +327,4 @@ class AnalyticsActivity : AppCompatActivity() {
             CalendarProgressComposable(records = selectedDateRecords)
         }
     }
-} */
+}

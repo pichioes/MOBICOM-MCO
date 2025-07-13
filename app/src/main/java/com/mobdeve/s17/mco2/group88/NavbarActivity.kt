@@ -1,4 +1,4 @@
-package com.mobdeve.s17.mco2.group88
+/*package com.mobdeve.s17.mco2.group88
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -26,3 +26,4 @@ fun NavbarActivity(
         true
     }
 }
+*/

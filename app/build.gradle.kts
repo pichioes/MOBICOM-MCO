@@ -58,11 +58,10 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    //implementation ("com.jjoe64:graphview:4.2.2")
-    //implementation ("com.prolificinteractive:material-calendarview:1.4.3")
+    implementation ("com.jjoe64:graphview:4.2.2")
+    implementation ("com.prolificinteractive:material-calendarview:1.4.3")
     implementation("androidx.core:core-splashscreen:1.0.1")
     implementation ("androidx.appcompat:appcompat:1.6.1")
-
     implementation ("com.github.bumptech.glide:glide:4.16.0")
     kapt("com.github.bumptech.glide:compiler:4.15.1")
     implementation ("androidx.cardview:cardview:1.0.0")
