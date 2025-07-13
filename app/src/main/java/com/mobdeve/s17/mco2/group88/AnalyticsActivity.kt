@@ -1,6 +1,7 @@
 // AnalyticsActivity.kt
 package com.mobdeve.s17.mco2.group88
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -10,6 +11,7 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.platform.ComposeView
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.jjoe64.graphview.GraphView
 import com.jjoe64.graphview.series.BarGraphSeries
 import com.jjoe64.graphview.series.DataPoint
@@ -20,6 +22,7 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 class AnalyticsActivity : AppCompatActivity() {
+
 
     // Sample data - replace with your actual data source
     private val waterRecords = mutableListOf<WaterRecord>()
@@ -37,6 +40,27 @@ class AnalyticsActivity : AppCompatActivity() {
         setupGraphs()
         updateWaterReport()
         setupCalendarProgress()
+
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+
+        bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> {
+                    val intent = Intent(this, HomeActivity::class.java)
+                    startActivity(intent)
+                    true
+                }
+                R.id.nav_analytics -> {
+                    true
+                }
+                R.id.nav_profile -> {
+                    val intent = Intent(this, ProfileMainPage::class.java)
+                    startActivity(intent)
+                    true
+                }
+                else -> false
+            }
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

@@ -7,6 +7,13 @@
     android:backgroundTintMode="add"
     android:orientation="vertical">
 
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="252dp"
@@ -464,4 +471,15 @@
 
         </LinearLayout>
     </FrameLayout>
+
+    </LinearLayout>
+
+    <!-- BottomNavigationView -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:attr/windowBackground"
+        app:menu="@menu/bottom_navbar" />
+
 </LinearLayout>

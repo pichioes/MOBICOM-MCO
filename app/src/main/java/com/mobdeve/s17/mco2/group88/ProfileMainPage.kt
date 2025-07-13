@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.content.Intent
 import android.view.ViewGroup
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 
 class ProfileMainPage : AppCompatActivity() {
@@ -15,6 +16,27 @@ class ProfileMainPage : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.profile_mainpage)
+
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
+
+        bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> {
+                    val intent = Intent(this, HomeActivity::class.java)
+                    startActivity(intent)
+                    true
+                }
+                R.id.nav_analytics -> {
+                    val intent = Intent(this, AnalyticsActivity::class.java)
+                    startActivity(intent)
+                    true
+                }
+                R.id.nav_profile -> {
+                    true
+                }
+                else -> false
+            }
+        }
 
         val logoutLayer = findViewById<View>(R.id.logout_layer)
         logoutLayer.setOnClickListener {
