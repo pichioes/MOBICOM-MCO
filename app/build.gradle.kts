@@ -37,6 +37,7 @@ android {
     }
     buildFeatures {
         compose = true
+        viewBinding = true
     }
 }
 
@@ -61,7 +62,7 @@ dependencies {
     //implementation ("com.prolificinteractive:material-calendarview:1.4.3")
     implementation("androidx.core:core-splashscreen:1.0.1")
     implementation ("androidx.appcompat:appcompat:1.6.1")
-    implementation ("com.google.android.material:material:1.11.0")
+
     implementation ("com.github.bumptech.glide:glide:4.16.0")
     kapt("com.github.bumptech.glide:compiler:4.15.1")
     implementation ("androidx.cardview:cardview:1.0.0")
@@ -70,6 +71,7 @@ dependencies {
     implementation ("androidx.compose.material3:material3:1.0.0")
     implementation ("androidx.compose.ui:ui-tooling-preview:1.0.0")
     implementation ("androidx.activity:activity-compose:1.3.1")
+    implementation("com.google.android.material:material:1.12.0") // or latest version
 
 
 }
