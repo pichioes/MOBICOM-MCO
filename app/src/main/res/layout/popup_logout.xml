@@ -5,60 +5,78 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="@drawable/popuplogout_background"
-    android:padding="24dp">
+    android:padding="24dp"
+    android:gravity="center">
 
     <LinearLayout
-        android:layout_width="280dp"
+        android:layout_width="350dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        android:background="@drawable/popuplogout_background"
+        android:gravity="center"
         android:orientation="vertical"
-        android:padding="24dp"
-        android:background="@drawable/popuplogout_background">
+        android:padding="24dp">
 
+        <!-- Title -->
         <TextView
             android:id="@+id/popup_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
+            android:layout_gravity="center"
+            android:fontFamily="@font/outfit"
             android:text="Logout"
-            android:textColor="@color/background"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:textColor="#132E4F"
+            android:textSize="30sp" />
 
+        <!-- Message -->
         <TextView
             android:id="@+id/popup_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
+            android:layout_gravity="center"
             android:layout_marginTop="12dp"
+            android:fontFamily="@font/outfit"
             android:text="Are you sure you want to log out?"
             android:textAlignment="center"
             android:textColor="#000000"
             android:textSize="16sp" />
 
+        <!-- Buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:orientation="horizontal"
-            android:gravity="end">
+            android:gravity="center"
+            android:orientation="horizontal">
 
+            <!-- Cancel Button -->
             <Button
                 android:id="@+id/cancel_button"
-                android:layout_width="wrap_content"
+                android:layout_width="50dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
-                android:backgroundTint="#2C2C2C2C"
+                android:layout_weight="1"
+                android:backgroundTint="#2C2C2C"
+                android:fontFamily="@font/outfit"
+                android:padding="5dp"
                 android:text="Cancel"
+                android:textAllCaps="false"
                 android:textColor="#FFFFFF" />
+
+            <Space
+                android:layout_width="16dp"
+                android:layout_height="wrap_content"/>
 
             <Button
                 android:id="@+id/logout_button"
-                android:layout_width="wrap_content"
+                android:layout_width="50dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:backgroundTint="@color/background"
+                android:fontFamily="@font/outfit"
+                android:padding="5dp"
                 android:text="Yes, Logout"
+                android:textAllCaps="false"
                 android:textColor="#FFFFFF" />
-        </LinearLayout>
+    </LinearLayout>
     </LinearLayout>
 </LinearLayout>

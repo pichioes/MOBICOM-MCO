@@ -3,16 +3,16 @@
     android:id="@+id/goals_popup_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#99000000"> <!-- Semi-transparent overlay -->
+    android:background="#99000000">
 
     <LinearLayout
-        android:layout_width="300dp"
+        android:layout_width="355dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:orientation="vertical"
         android:background="@drawable/popup_background"
-        android:padding="24dp"
-        android:elevation="8dp">
+        android:elevation="8dp"
+        android:orientation="vertical"
+        android:padding="24dp">
 
         <!-- Header -->
         <TextView
@@ -20,15 +20,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fontFamily="@font/outfit"
-            android:text="Change Goals"
+            android:text="Intake Goals"
             android:textAlignment="viewStart"
-            android:textColor="@color/purple_500"
+            android:textColor="#475467"
             android:textSize="20sp"
             android:textStyle="bold" />
 
         <!-- Subtitle -->
-
-        <!-- Input with icon -->
         <TextView
             android:id="@+id/popup_subtitle"
             android:layout_width="wrap_content"
@@ -37,13 +35,13 @@
             android:layout_marginTop="5dp"
             android:fontFamily="@font/outfit"
             android:text="Suggested = XXXX ml"
-            android:textColor="#000000"
             android:textSize="14sp" />
 
+        <!-- Input with icon -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="89dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="10dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -70,9 +68,9 @@
         <!-- Confirm button -->
         <Button
             android:id="@+id/confirm_goals_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_width="162dp"
+            android:layout_height="45dp"
+            android:layout_gravity="right"
             android:backgroundTint="@color/background"
             android:fontFamily="@font/outfit"
             android:text="CONFIRM"

@@ -1,15 +1,14 @@
 package com.mobdeve.s17.mco2.group88
 
+import android.content.Intent
 import android.os.Bundle
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import android.view.LayoutInflater
 import android.widget.Button
-import androidx.appcompat.app.AppCompatActivity
 import android.view.View
-import android.content.Intent
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
-
+import com.google.android.material.bottomsheet.BottomSheetDialog
 
 class ProfileMainPage : AppCompatActivity() {
 
@@ -61,7 +60,6 @@ class ProfileMainPage : AppCompatActivity() {
 
     }
 
-
     private fun showGoalsPopup() {
         val dialog = android.app.Dialog(this)
         val view = layoutInflater.inflate(R.layout.popup_goals, null)
@@ -94,12 +92,13 @@ class ProfileMainPage : AppCompatActivity() {
         cancelBtn.setOnClickListener { dialog.dismiss() }
         deleteBtn.setOnClickListener {
             dialog.dismiss()
-            // TODO: implement logout logic
+            // TODO: implement delete account logic
         }
 
         dialog.setContentView(view)
         dialog.show()
     }
+
     private fun showLogoutPopup() {
         val dialog = BottomSheetDialog(this)
         val view = LayoutInflater.from(this).inflate(R.layout.popup_logout, null)
@@ -110,10 +109,26 @@ class ProfileMainPage : AppCompatActivity() {
         cancelBtn.setOnClickListener { dialog.dismiss() }
         logoutBtn.setOnClickListener {
             dialog.dismiss()
-            // TODO: implement logout logic
+            logoutUser() // Log out the user when "Yes, Logout" is clicked
         }
 
         dialog.setContentView(view)
         dialog.show()
+    }
+
+    private fun logoutUser() {
+        // Clear user data (e.g., SharedPreferences, FirebaseAuth, etc.)
+
+        // Example with SharedPreferences:
+        val sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.clear()  // Clear all user data
+        editor.apply()
+
+        // Navigate back to login screen or home page
+        val intent = Intent(this, LoginActivity::class.java)  // Change to your login activity
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the stack so the user can't return to the ProfileMainPage
+        startActivity(intent)
+        finish()  // Close the current activity
     }
 }
