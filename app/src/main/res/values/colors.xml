@@ -19,4 +19,10 @@
     <color name="colorSelected">#64B5F6</color>
     <color name="colorUnselected">#FFFFFF</color>
 
+    <!-- Unselected Icon Color -->
+    <color name="nav_unselected_icon_color">#8a8a8a</color> <!-- Gray color for unselected icons -->
+
+    <!-- Selected Icon Color -->
+    <color name="nav_selected_icon_color">#1E90FF</color> <!-- Blue color for selected icon -->
+
 </resources>

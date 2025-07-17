@@ -1,7 +1,7 @@
-// AnalyticsActivity.kt
 package com.mobdeve.s17.mco2.group88
 
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.platform.ComposeView
+import androidx.core.content.ContextCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.jjoe64.graphview.GraphView
 import com.jjoe64.graphview.series.BarGraphSeries
@@ -22,7 +23,6 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 class AnalyticsActivity : AppCompatActivity() {
-
 
     // Sample data - replace with your actual data source
     private val waterRecords = mutableListOf<WaterRecord>()
@@ -41,8 +41,35 @@ class AnalyticsActivity : AppCompatActivity() {
         updateWaterReport()
         setupCalendarProgress()
 
+        // Set up Bottom Navigation for Analytics
+        setupBottomNavigation()  // Ensure you have this method here
+    }
+
+    private fun setupBottomNavigation() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
 
+        // Create color state lists programmatically
+        val states = arrayOf(
+            intArrayOf(android.R.attr.state_checked),  // Selected state
+            intArrayOf(-android.R.attr.state_checked) // Unselected state
+        )
+
+        // Define colors for the states (selected vs unselected)
+        val colors = intArrayOf(
+            ContextCompat.getColor(this, R.color.nav_selected_icon_color),  // Selected color
+            ContextCompat.getColor(this, R.color.nav_unselected_icon_color)  // Unselected color
+        )
+
+        val colorStateList = ColorStateList(states, colors)
+
+        // Set the color state list for both item icon and item text
+        bottomNav.itemIconTintList = colorStateList
+        bottomNav.itemTextColor = colorStateList
+
+        // Set the selected item to Analytics by default
+        bottomNav.selectedItemId = R.id.nav_analytics  // Ensure Analytics is selected by default
+
+        // Handle item selection
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_home -> {
@@ -51,6 +78,7 @@ class AnalyticsActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_analytics -> {
+                    // Stay on AnalyticsActivity
                     true
                 }
                 R.id.nav_profile -> {
@@ -62,6 +90,7 @@ class AnalyticsActivity : AppCompatActivity() {
             }
         }
     }
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun initializeSampleData() {
