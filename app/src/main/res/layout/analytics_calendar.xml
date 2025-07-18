@@ -3,7 +3,7 @@
     android:id="@+id/analyticsCalendarLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#294267"
+    android:background="#24557D"
     android:gravity="center"
     android:orientation="vertical"
     android:padding="16dp">
@@ -54,6 +54,7 @@
             android:layout_height="193dp"
             android:layout_marginTop="10dp"
             android:background="@drawable/report_card_bg"
+            android:gravity="center_vertical"
             android:orientation="vertical"
             android:padding="16dp">
 
@@ -61,25 +62,45 @@
                 android:id="@+id/weeklyAverageTv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Weekly Average: 400ml / Day" />
+                android:fontFamily="@font/outfit"
+                android:text="Weekly Average:"
+                android:textSize="16sp" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="20dp" />
 
             <TextView
                 android:id="@+id/monthlyAverageTv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Monthly Average: 540ml / Day" />
+                android:fontFamily="@font/outfit"
+                android:text="Monthly Average:"
+                android:textSize="16sp" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="20dp" />
 
             <TextView
                 android:id="@+id/averageCompletionTv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Average Completion: 76%" />
+                android:fontFamily="@font/outfit"
+                android:text="Average Completion:"
+                android:textSize="16sp" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="20dp" />
 
             <TextView
                 android:id="@+id/drinkFrequencyTv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Drink Frequency: 4 Times / Day" />
+                android:fontFamily="@font/outfit"
+                android:text="Drink Frequency:"
+                android:textSize="16sp" />
 
         </LinearLayout>
     </LinearLayout>
