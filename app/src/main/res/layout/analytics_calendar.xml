@@ -4,22 +4,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#294267"
+    android:gravity="center"
     android:orientation="vertical"
     android:padding="16dp">
 
     <!-- Toggle Buttons -->
-    <LinearLayout
-        android:id="@+id/toggleLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal"/>
 
     <!-- Calendar with integrated progress rings -->
     <com.prolificinteractive.materialcalendarview.MaterialCalendarView
         android:id="@+id/calendarView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="393dp"
         android:layout_marginTop="16dp"
         android:background="@drawable/toggle_bg" />
 
@@ -30,41 +25,63 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="16dp"
-        android:visibility="gone"/>
+        android:visibility="gone" >
+
+    </androidx.compose.ui.platform.ComposeView>
 
     <!-- Water Report -->
+
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="227dp"
-        android:layout_marginTop="24dp"
-        android:background="@drawable/report_card_bg"
+        android:layout_height="263dp"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:paddingTop="30dp">
 
         <TextView
-            android:id="@+id/weeklyAverageText"
-            android:layout_width="wrap_content"
+            android:id="@+id/waterReportTv"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Weekly Average: 400ml / Day" />
+            android:layout_marginBottom="-5dp"
+            android:fontFamily="@font/outfit"
+            android:text="Water Report"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+            android:textColor="#F6F6F6"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/monthlyAverageText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Monthly Average: 540ml / Day" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="193dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/report_card_bg"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <TextView
-            android:id="@+id/averageCompletionText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Average Completion: 76%" />
+            <TextView
+                android:id="@+id/weeklyAverageTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Weekly Average: 400ml / Day" />
 
-        <TextView
-            android:id="@+id/drinkFrequencyText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Drink Frequency: 4 Times / Day" />
+            <TextView
+                android:id="@+id/monthlyAverageTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Monthly Average: 540ml / Day" />
 
+            <TextView
+                android:id="@+id/averageCompletionTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Average Completion: 76%" />
+
+            <TextView
+                android:id="@+id/drinkFrequencyTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Drink Frequency: 4 Times / Day" />
+
+        </LinearLayout>
     </LinearLayout>
 
 </LinearLayout>

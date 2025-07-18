@@ -2,11 +2,9 @@ package com.mobdeve.s17.mco2.group88
 
 import android.content.Intent
 import android.content.res.ColorStateList
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -217,10 +215,10 @@ class AnalyticsActivity : AppCompatActivity() {
 
         try {
             val calendarLayout = findViewById<View>(R.id.calendarLayout)
-            calendarLayout.findViewById<TextView>(R.id.weeklyAverageText)?.text = weeklyText
-            calendarLayout.findViewById<TextView>(R.id.monthlyAverageText)?.text = monthlyText
-            calendarLayout.findViewById<TextView>(R.id.averageCompletionText)?.text = completionText
-            calendarLayout.findViewById<TextView>(R.id.drinkFrequencyText)?.text = frequencyText
+            calendarLayout.findViewById<TextView>(R.id.weeklyAverageTv)?.text = weeklyText
+            calendarLayout.findViewById<TextView>(R.id.monthlyAverageTv)?.text = monthlyText
+            calendarLayout.findViewById<TextView>(R.id.averageCompletionTv)?.text = completionText
+            calendarLayout.findViewById<TextView>(R.id.drinkFrequencyTv)?.text = frequencyText
         } catch (e: Exception) {
             // Handle if views not found
         }
