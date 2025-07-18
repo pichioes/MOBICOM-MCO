@@ -1,3 +1,9 @@
 <resources>
-    <string name="app_name">MOBICOM MCO2</string>
+    <string-array name="reminder_options">
+        <item>Pick an option</item>
+        <item>Every 1 hour</item>
+        <item>Every 2 hours</item>
+        <item>Every 3 hours</item>
+        <item>Every 4 hours</item>
+    </string-array>
 </resources>

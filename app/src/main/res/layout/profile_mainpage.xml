@@ -132,7 +132,11 @@
                 <Switch
                     android:id="@+id/switch1"
                     android:layout_width="48dp"
-                    android:layout_height="48dp" />
+                    android:layout_height="48dp"
+                    android:checked="true"
+                    android:thumbTint="@color/textcolor"
+                    android:trackTint="@color/white"
+                    />
 
             </LinearLayout>
         </LinearLayout>
@@ -203,7 +207,7 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/goals_layout"
+                android:id="@+id/goals_layer"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:orientation="horizontal"
@@ -258,6 +262,7 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/notifications_layer"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:orientation="horizontal"

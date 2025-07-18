@@ -174,7 +174,7 @@ class HomeActivity : AppCompatActivity() {
             val button = gridLayout.getChildAt(i) as ImageButton
             button.setBackgroundResource(0)
         }
-        selectedButton.setBackgroundColor(resources.getColor(R.color.colorPrimary))
+        selectedButton.setBackgroundColor(resources.getColor(R.color.grey))
     }
 
     private fun updateRecyclerView() {

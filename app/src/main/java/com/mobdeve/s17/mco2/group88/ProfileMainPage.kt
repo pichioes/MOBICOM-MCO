@@ -7,6 +7,11 @@ import android.view.LayoutInflater
 import android.widget.Button
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
+import android.widget.Switch
+import android.widget.Spinner
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -34,9 +39,15 @@ class ProfileMainPage : AppCompatActivity() {
         }
 
         // Handling click for goals section
-        val goalsLayer = findViewById<View>(R.id.goals_layout)
+        val goalsLayer = findViewById<View>(R.id.goals_layer)
         goalsLayer.setOnClickListener {
             showGoalsPopup()  // Show the goals popup
+        }
+
+        // Handling click for notifications section
+        val notificationsLayer = findViewById<View>(R.id.notifications_layer)
+                notificationsLayer.setOnClickListener {
+            showNotificationsPopup()  // Show the notifications popup
         }
 
         // Handling click for account management
@@ -163,5 +174,36 @@ class ProfileMainPage : AppCompatActivity() {
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK  // Clear the stack
         startActivity(intent)
         finish()  // Close the current activity
+    }
+
+    // Show Notifications Popup
+    private fun showNotificationsPopup() {
+        val dialog = android.app.Dialog(this)
+        val view = layoutInflater.inflate(R.layout.popup_notifications, null)
+
+        val closeButton = view.findViewById<ImageButton>(R.id.customizeCloseButton)
+        closeButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        val confirmButton = view.findViewById<Button>(R.id.confirm_notifications)
+        confirmButton.setOnClickListener {
+            // Handle logic to confirm notification settings
+            dialog.dismiss()
+        }
+
+        dialog.setContentView(view)
+        dialog.window?.apply {
+            setBackgroundDrawableResource(android.R.color.transparent)
+            setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            setDimAmount(0.5f)  // Dim the background
+            setGravity(android.view.Gravity.CENTER)
+        }
+
+        dialog.setCancelable(true)
+        dialog.show()
     }
 }
