@@ -15,7 +15,7 @@
         android:gravity="center"
         android:orientation="horizontal"/>
 
-    <!-- Calendar -->
+    <!-- Calendar with integrated progress rings -->
     <com.prolificinteractive.materialcalendarview.MaterialCalendarView
         android:id="@+id/calendarView"
         android:layout_width="match_parent"
@@ -23,12 +23,14 @@
         android:layout_marginTop="16dp"
         android:background="@drawable/toggle_bg" />
 
+    <!-- Optional: Keep the large progress ring for selected date -->
     <androidx.compose.ui.platform.ComposeView
         android:id="@+id/calendarProgressComposeView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="16dp"
+        android:visibility="gone"/>
 
     <!-- Water Report -->
     <LinearLayout
@@ -45,13 +47,11 @@
             android:layout_height="wrap_content"
             android:text="Weekly Average: 400ml / Day" />
 
-
         <TextView
             android:id="@+id/monthlyAverageText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Monthly Average: 540ml / Day" />
-
 
         <TextView
             android:id="@+id/averageCompletionText"
@@ -59,13 +59,11 @@
             android:layout_height="wrap_content"
             android:text="Average Completion: 76%" />
 
-
         <TextView
             android:id="@+id/drinkFrequencyText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Drink Frequency: 4 Times / Day" />
-
 
     </LinearLayout>
 

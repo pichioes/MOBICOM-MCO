@@ -23,6 +23,8 @@ class AnalyticsActivity : AppCompatActivity() {
 
     private val waterRecords = mutableListOf<WaterRecord>()
     private var selectedDateString: String? = null
+    private var currentDisplayedMonth: Int = LocalDate.now().monthValue
+    private var currentDisplayedYear: Int = LocalDate.now().year
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -101,10 +103,24 @@ class AnalyticsActivity : AppCompatActivity() {
         calendarView.setSelectedDate(CalendarDay.today())
         selectedDateString = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
+        // Add the water progress decorator
+        val waterProgressDecorator = WaterProgressDecoratorWithDate(this, waterRecords)
+        calendarView.addDecorator(waterProgressDecorator)
+
         calendarView.setOnDateChangedListener { widget, date, selected ->
             selectedDateString = LocalDate.of(date.year, date.month, date.day)
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
             updateCalendarProgressForDate(date)
+        }
+
+        // Track month changes to update decorator
+        calendarView.setOnMonthChangedListener { widget, date ->
+            currentDisplayedMonth = date.month
+            currentDisplayedYear = date.year
+            // Update the decorator with new month/year info
+            calendarView.removeDecorators()
+            val updatedDecorator = WaterProgressDecoratorWithDate(this, waterRecords, currentDisplayedYear, currentDisplayedMonth)
+            calendarView.addDecorator(updatedDecorator)
         }
     }
 
