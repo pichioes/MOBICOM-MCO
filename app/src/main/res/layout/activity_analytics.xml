@@ -41,8 +41,6 @@
             android:orientation="vertical"
             android:visibility="visible">
 
-            <include layout="@layout/analytics_graph_weekly" />
-
         </LinearLayout>
 
         <!-- Monthly Graph Layout -->
@@ -52,8 +50,6 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:visibility="gone">
-
-            <include layout="@layout/analytics_graph_monthly" />
 
         </LinearLayout>
 

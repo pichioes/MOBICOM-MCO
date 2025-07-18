@@ -13,9 +13,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.content.ContextCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.jjoe64.graphview.GraphView
-import com.jjoe64.graphview.series.BarGraphSeries
-import com.jjoe64.graphview.series.DataPoint
+// import com.jjoe64.graphview.GraphView
+// import com.jjoe64.graphview.series.BarGraphSeries
+// import com.jjoe64.graphview.series.DataPoint
 import com.prolificinteractive.materialcalendarview.MaterialCalendarView
 import com.prolificinteractive.materialcalendarview.CalendarDay
 import java.time.LocalDate
@@ -34,10 +34,7 @@ class AnalyticsActivity : AppCompatActivity() {
 
         // Initialize with sample data
         initializeSampleData()
-
-        setupToggleButtons()
         setupCalendarView()
-        setupGraphs()
         updateWaterReport()
         setupCalendarProgress()
 
@@ -106,54 +103,6 @@ class AnalyticsActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupToggleButtons() {
-        val calendarToggleBtn = findViewById<Button>(R.id.calendarToggleBtn)
-        val analyticsToggleBtn = findViewById<Button>(R.id.analyticsToggleBtn)
-        val calendarLayout = findViewById<View>(R.id.calendarLayout)
-        val graphLayout = findViewById<View>(R.id.graphLayout)
-
-        calendarToggleBtn.setOnClickListener {
-            calendarLayout.visibility = View.VISIBLE
-            graphLayout.visibility = View.GONE
-
-            // Update button states
-            calendarToggleBtn.isEnabled = false
-            analyticsToggleBtn.isEnabled = true
-        }
-
-        analyticsToggleBtn.setOnClickListener {
-            calendarLayout.visibility = View.GONE
-            graphLayout.visibility = View.VISIBLE
-
-            // Update button states
-            calendarToggleBtn.isEnabled = true
-            analyticsToggleBtn.isEnabled = false
-        }
-
-        val weeklyGraphBtn = findViewById<Button>(R.id.weeklyGraphBtn)
-        val monthlyGraphBtn = findViewById<Button>(R.id.monthlyGraphBtn)
-        val weeklyGraphLayout = findViewById<View>(R.id.weeklyGraphLayout)
-        val monthlyGraphLayout = findViewById<View>(R.id.monthlyGraphLayout)
-
-        weeklyGraphBtn.setOnClickListener {
-            weeklyGraphLayout.visibility = View.VISIBLE
-            monthlyGraphLayout.visibility = View.GONE
-
-            // Update button states
-            weeklyGraphBtn.isEnabled = false
-            monthlyGraphBtn.isEnabled = true
-        }
-
-        monthlyGraphBtn.setOnClickListener {
-            weeklyGraphLayout.visibility = View.GONE
-            monthlyGraphLayout.visibility = View.VISIBLE
-
-            // Update button states
-            weeklyGraphBtn.isEnabled = true
-            monthlyGraphBtn.isEnabled = false
-        }
-    }
-
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setupCalendarView() {
         val calendarView = findViewById<MaterialCalendarView>(R.id.calendarView)
@@ -166,72 +115,6 @@ class AnalyticsActivity : AppCompatActivity() {
             // Handle date selection - update progress ring for selected date
             updateCalendarProgressForDate(date)
         }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun setupGraphs() {
-        setupWeeklyGraph()
-        setupMonthlyGraph()
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun setupWeeklyGraph() {
-        val weeklyGraphView = findViewById<GraphView>(R.id.weeklyGraphView)
-        val weeklyData = extractWeeklyData()
-
-        val dataPoints = weeklyData.mapIndexed { index, value ->
-            DataPoint(index.toDouble(), value.toDouble())
-        }.toTypedArray()
-
-        val series = BarGraphSeries(dataPoints)
-        series.color = Color.parseColor("#4F8CFF")
-        series.spacing = 20
-
-        weeklyGraphView.removeAllSeries()
-        weeklyGraphView.addSeries(series)
-
-        // Customize the graph
-        weeklyGraphView.viewport.isXAxisBoundsManual = true
-        weeklyGraphView.viewport.setMinX(0.0)
-        weeklyGraphView.viewport.setMaxX(6.0)
-        weeklyGraphView.viewport.isYAxisBoundsManual = true
-        weeklyGraphView.viewport.setMinY(0.0)
-        weeklyGraphView.viewport.setMaxY(3000.0)
-
-        // Set labels
-        weeklyGraphView.gridLabelRenderer.horizontalLabelsColor = Color.WHITE
-        weeklyGraphView.gridLabelRenderer.verticalLabelsColor = Color.WHITE
-        weeklyGraphView.gridLabelRenderer.gridColor = Color.GRAY
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun setupMonthlyGraph() {
-        val monthlyGraphView = findViewById<GraphView>(R.id.monthlyGraphView)
-        val monthlyData = extractMonthlyData()
-
-        val dataPoints = monthlyData.mapIndexed { index, value ->
-            DataPoint(index.toDouble(), value.toDouble())
-        }.toTypedArray()
-
-        val series = BarGraphSeries(dataPoints)
-        series.color = Color.parseColor("#4F8CFF")
-        series.spacing = 20
-
-        monthlyGraphView.removeAllSeries()
-        monthlyGraphView.addSeries(series)
-
-        // Customize the graph
-        monthlyGraphView.viewport.isXAxisBoundsManual = true
-        monthlyGraphView.viewport.setMinX(0.0)
-        monthlyGraphView.viewport.setMaxX(11.0)
-        monthlyGraphView.viewport.isYAxisBoundsManual = true
-        monthlyGraphView.viewport.setMinY(0.0)
-        monthlyGraphView.viewport.setMaxY(50000.0)
-
-        // Set labels
-        monthlyGraphView.gridLabelRenderer.horizontalLabelsColor = Color.WHITE
-        monthlyGraphView.gridLabelRenderer.verticalLabelsColor = Color.WHITE
-        monthlyGraphView.gridLabelRenderer.gridColor = Color.GRAY
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -333,28 +216,6 @@ class AnalyticsActivity : AppCompatActivity() {
             calendarLayout.findViewById<TextView>(R.id.monthlyAverageText)?.text = monthlyText
             calendarLayout.findViewById<TextView>(R.id.averageCompletionText)?.text = completionText
             calendarLayout.findViewById<TextView>(R.id.drinkFrequencyText)?.text = frequencyText
-        } catch (e: Exception) {
-            // Handle if views not found
-        }
-
-        // Update weekly graph layout TextViews
-        try {
-            val weeklyGraphLayout = findViewById<View>(R.id.weeklyGraphLayout)
-            weeklyGraphLayout.findViewById<TextView>(R.id.weeklyAverageText)?.text = weeklyText
-            weeklyGraphLayout.findViewById<TextView>(R.id.monthlyAverageText)?.text = monthlyText
-            weeklyGraphLayout.findViewById<TextView>(R.id.averageCompletionText)?.text = completionText
-            weeklyGraphLayout.findViewById<TextView>(R.id.drinkFrequencyText)?.text = frequencyText
-        } catch (e: Exception) {
-            // Handle if views not found
-        }
-
-        // Update monthly graph layout TextViews
-        try {
-            val monthlyGraphLayout = findViewById<View>(R.id.monthlyGraphLayout)
-            monthlyGraphLayout.findViewById<TextView>(R.id.weeklyAverageText)?.text = weeklyText
-            monthlyGraphLayout.findViewById<TextView>(R.id.monthlyAverageText)?.text = monthlyText
-            monthlyGraphLayout.findViewById<TextView>(R.id.averageCompletionText)?.text = completionText
-            monthlyGraphLayout.findViewById<TextView>(R.id.drinkFrequencyText)?.text = frequencyText
         } catch (e: Exception) {
             // Handle if views not found
         }
