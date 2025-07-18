@@ -20,19 +20,21 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun CalendarProgressComposable(records: List<WaterRecord>, goalAmount: Int = 2150) {
+fun CalendarProgressComposable(
+    records: List<WaterRecord>,
+    goalAmount: Int = 2150,
+    selectedDate: String? = null  // Add selectedDate parameter
+) {
     val strokeWidthDp = 23.dp
     val sizeDp = 180.dp
     val strokeWidthPx = with(LocalDensity.current) { strokeWidthDp.toPx() }
 
-    // Calculate today's total intake from records
-    val today = LocalDate.now()
-    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    val todayDateString = today.format(formatter)
+    // Use selectedDate if provided, otherwise use today's date
+    val targetDate = selectedDate ?: LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
-    // Sum up all water records for today (since records contain individual intake amounts)
+    // Sum up all water records for the target date
     val currentIntake = records
-        .filter { it.time == todayDateString }
+        .filter { it.time == targetDate }
         .sumOf { it.amount?.toDouble() ?: 0.0 }
         .toInt()
 

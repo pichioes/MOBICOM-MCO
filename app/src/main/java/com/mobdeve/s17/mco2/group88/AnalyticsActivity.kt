@@ -13,9 +13,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.content.ContextCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
-// import com.jjoe64.graphview.GraphView
-// import com.jjoe64.graphview.series.BarGraphSeries
-// import com.jjoe64.graphview.series.DataPoint
 import com.prolificinteractive.materialcalendarview.MaterialCalendarView
 import com.prolificinteractive.materialcalendarview.CalendarDay
 import java.time.LocalDate
@@ -24,49 +21,59 @@ import java.util.*
 
 class AnalyticsActivity : AppCompatActivity() {
 
-    // Sample data - replace with your actual data source
     private val waterRecords = mutableListOf<WaterRecord>()
+    private var selectedDateString: String? = null
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_analytics)
 
-        // Initialize with sample data
-        initializeSampleData()
+        // Get real data from HomeActivity instead of generating sample data
+        loadWaterRecordsFromIntent()
+
         setupCalendarView()
         updateWaterReport()
         setupCalendarProgress()
+        setupBottomNavigation()
+    }
 
-        // Set up Bottom Navigation for Analytics
-        setupBottomNavigation()  // Ensure you have this method here
+    private fun loadWaterRecordsFromIntent() {
+        // Get the water records passed from HomeActivity
+        val recordStrings = intent.getStringArrayListExtra("waterRecords")
+        if (recordStrings != null) {
+            waterRecords.clear()
+            for (recordString in recordStrings) {
+                val parts = recordString.split("|")
+                if (parts.size == 2) {
+                    waterRecords.add(WaterRecord(parts[0], parts[1]))
+                }
+            }
+        }
+
+        // If no records were passed, you can still add some default/empty state
+        // but don't add random sample data
     }
 
     private fun setupBottomNavigation() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
 
-        // Create color state lists programmatically
         val states = arrayOf(
-            intArrayOf(android.R.attr.state_checked),  // Selected state
-            intArrayOf(-android.R.attr.state_checked) // Unselected state
+            intArrayOf(android.R.attr.state_checked),
+            intArrayOf(-android.R.attr.state_checked)
         )
 
-        // Define colors for the states (selected vs unselected)
         val colors = intArrayOf(
-            ContextCompat.getColor(this, R.color.nav_selected_icon_color),  // Selected color
-            ContextCompat.getColor(this, R.color.nav_unselected_icon_color)  // Unselected color
+            ContextCompat.getColor(this, R.color.nav_selected_icon_color),
+            ContextCompat.getColor(this, R.color.nav_unselected_icon_color)
         )
 
         val colorStateList = ColorStateList(states, colors)
 
-        // Set the color state list for both item icon and item text
         bottomNav.itemIconTintList = colorStateList
         bottomNav.itemTextColor = colorStateList
+        bottomNav.selectedItemId = R.id.nav_analytics
 
-        // Set the selected item to Analytics by default
-        bottomNav.selectedItemId = R.id.nav_analytics  // Ensure Analytics is selected by default
-
-        // Handle item selection
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_home -> {
@@ -75,7 +82,6 @@ class AnalyticsActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_analytics -> {
-                    // Stay on AnalyticsActivity
                     true
                 }
                 R.id.nav_profile -> {
@@ -88,31 +94,16 @@ class AnalyticsActivity : AppCompatActivity() {
         }
     }
 
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun initializeSampleData() {
-        // Sample data for demonstration - replace with your actual data loading
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        val today = LocalDate.now()
-
-        // Add sample data for the past week
-        for (i in 0..6) {
-            val date = today.minusDays(i.toLong())
-            val amount = (1500..2500).random()
-            waterRecords.add(WaterRecord(date.format(formatter), amount.toFloat().toString()))
-        }
-    }
-
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setupCalendarView() {
         val calendarView = findViewById<MaterialCalendarView>(R.id.calendarView)
 
-        // Set up calendar with current date
         calendarView.setSelectedDate(CalendarDay.today())
+        selectedDateString = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
-        // Add click listener for date selection
         calendarView.setOnDateChangedListener { widget, date, selected ->
-            // Handle date selection - update progress ring for selected date
+            selectedDateString = LocalDate.of(date.year, date.month, date.day)
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
             updateCalendarProgressForDate(date)
         }
     }
@@ -143,7 +134,7 @@ class AnalyticsActivity : AppCompatActivity() {
                 val date = LocalDate.parse(record.time, formatter)
                 val month = date.monthValue - 1
                 if (month in 0..11) {
-                    result[month] += record.amount?.toFloat() ?: 0f
+                    result[month] += record?.amount?.toFloat() ?: 0f
                 }
             } catch (e: Exception) {
                 // Handle parsing errors
@@ -194,7 +185,6 @@ class AnalyticsActivity : AppCompatActivity() {
             weeklyEntries.size / 7.0
         } else 0.0
 
-        // Update TextViews in all layouts
         updateTextViewsInAllLayouts(weeklyAvg, monthlyAvg, completionRate, frequency)
     }
 
@@ -209,7 +199,6 @@ class AnalyticsActivity : AppCompatActivity() {
         val completionText = "Average Completion: ${completionRate.toInt()}%"
         val frequencyText = "Drink Frequency: ${"%.1f".format(frequency)} Times / Day"
 
-        // Update calendar layout TextViews
         try {
             val calendarLayout = findViewById<View>(R.id.calendarLayout)
             calendarLayout.findViewById<TextView>(R.id.weeklyAverageText)?.text = weeklyText
@@ -224,7 +213,10 @@ class AnalyticsActivity : AppCompatActivity() {
     private fun setupCalendarProgress() {
         val calendarProgressComposeView = findViewById<ComposeView>(R.id.calendarProgressComposeView)
         calendarProgressComposeView.setContent {
-            CalendarProgressComposable(records = waterRecords)
+            CalendarProgressComposable(
+                records = waterRecords,
+                selectedDate = selectedDateString
+            )
         }
     }
 
@@ -233,12 +225,12 @@ class AnalyticsActivity : AppCompatActivity() {
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         val dateString = LocalDate.of(date.year, date.month, date.day).format(formatter)
 
-        // Filter records for selected date
-        val selectedDateRecords = waterRecords.filter { it.time == dateString }
-
         val calendarProgressComposeView = findViewById<ComposeView>(R.id.calendarProgressComposeView)
         calendarProgressComposeView.setContent {
-            CalendarProgressComposable(records = selectedDateRecords)
+            CalendarProgressComposable(
+                records = waterRecords,
+                selectedDate = dateString
+            )
         }
     }
 }

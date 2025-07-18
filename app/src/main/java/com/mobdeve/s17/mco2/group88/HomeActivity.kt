@@ -20,42 +20,37 @@ import java.util.*
 
 class HomeActivity : AppCompatActivity() {
 
-    private val waterRecords = mutableListOf<WaterRecord>() // List to track water intake records
-    private var selectedCupSize = 250 // Default value (can be updated after confirmation)
+    private val waterRecords = mutableListOf<WaterRecord>()
+    private var selectedCupSize = 250
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.homepage)
 
-        // Set up Bottom Navigation
         setupBottomNavigation()
 
-        // Set up ComposeView for WeekBar
         val weekBarComposeView = findViewById<ComposeView>(R.id.WeekBar)
         weekBarComposeView.setContent {
             val userProgress = arrayOf(100, 80, 60, 40, 20, 0, 70)
-            WeekBar(userProgress = userProgress)  // Render WeekBar composable
+            WeekBar(userProgress = userProgress)
         }
 
-        // Set up ComposeView for CircularProgressWithCap
         val circularProgressComposeView = findViewById<ComposeView>(R.id.composeProgress)
         circularProgressComposeView.setContent {
             CircularProgressWithCap(
-                goalAmount = 2150, // Set goal here
+                goalAmount = 2150,
                 onWaterIntake = { record ->
-                    waterRecords.add(0, record) // Add water record to the list
+                    waterRecords.add(0, record)
                     updateRecyclerView()
                 }
             )
         }
 
-        // Set up RecyclerView for displaying water intake records
         val recyclerView = findViewById<RecyclerView>(R.id.recordsRecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
         val adapter = WaterRecordAdapter(waterRecords)
         recyclerView.adapter = adapter
 
-        // Set up ImageButton for the "Switch Cup" button (to trigger the popup)
         val switchCupButton = findViewById<ImageButton>(R.id.switchcup)
         switchCupButton.setOnClickListener {
             showPopup()
@@ -65,35 +60,31 @@ class HomeActivity : AppCompatActivity() {
     private fun setupBottomNavigation() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
 
-        // Create color state lists programmatically
         val states = arrayOf(
-            intArrayOf(android.R.attr.state_checked),  // Selected state
-            intArrayOf(-android.R.attr.state_checked) // Unselected state
+            intArrayOf(android.R.attr.state_checked),
+            intArrayOf(-android.R.attr.state_checked)
         )
 
-        // Define colors for the states (selected vs unselected)
         val colors = intArrayOf(
-            ContextCompat.getColor(this, R.color.nav_selected_icon_color),  // Selected color
-            ContextCompat.getColor(this, R.color.nav_unselected_icon_color)  // Unselected color
+            ContextCompat.getColor(this, R.color.nav_selected_icon_color),
+            ContextCompat.getColor(this, R.color.nav_unselected_icon_color)
         )
 
         val colorStateList = ColorStateList(states, colors)
 
-        // Set the color state list for both item icon and item text
         bottomNav.itemIconTintList = colorStateList
         bottomNav.itemTextColor = colorStateList
-
-        // Make sure the selected item is properly set
-        bottomNav.selectedItemId = R.id.nav_home  // Ensure the default is 'home'
+        bottomNav.selectedItemId = R.id.nav_home
 
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_home -> {
-                    // Refresh or stay on HomeActivity
                     true
                 }
                 R.id.nav_analytics -> {
+                    // Pass water records to AnalyticsActivity
                     val intent = Intent(this, AnalyticsActivity::class.java)
+                    intent.putExtra("waterRecords", ArrayList(waterRecords.map { "${it.time}|${it.amount}" }))
                     startActivity(intent)
                     true
                 }
@@ -107,7 +98,6 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-
     private fun showPopup() {
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.popup_switchcup)
@@ -115,7 +105,7 @@ class HomeActivity : AppCompatActivity() {
 
         val closeButton = dialog.findViewById<ImageButton>(R.id.switchCloseButton)
         closeButton.setOnClickListener {
-            dialog.dismiss() // Dismiss the dialog on close
+            dialog.dismiss()
         }
 
         setCupSizeButtonClickListener(dialog, R.id.btn_100ml, 100)
@@ -128,7 +118,7 @@ class HomeActivity : AppCompatActivity() {
 
         val customizeButton = dialog.findViewById<ImageButton>(R.id.btn_customize)
         customizeButton.setOnClickListener {
-            showCustomizePopup() // Show the popup to input a custom size
+            showCustomizePopup()
         }
 
         val confirmButton = dialog.findViewById<Button>(R.id.confirmButton)
@@ -147,7 +137,7 @@ class HomeActivity : AppCompatActivity() {
 
         val closeButton = dialog.findViewById<ImageButton>(R.id.customizeCloseButton)
         closeButton.setOnClickListener {
-            dialog.dismiss() // Dismiss the dialog on close
+            dialog.dismiss()
         }
 
         val confirmButton = dialog.findViewById<Button>(R.id.confirmButton)
@@ -163,7 +153,7 @@ class HomeActivity : AppCompatActivity() {
                 Toast.makeText(this, "Please enter a valid cup size", Toast.LENGTH_SHORT).show()
             }
 
-            dialog.dismiss() // Close the custom popup
+            dialog.dismiss()
         }
 
         dialog.show()
@@ -172,7 +162,7 @@ class HomeActivity : AppCompatActivity() {
     private fun setCupSizeButtonClickListener(dialog: Dialog, buttonId: Int, cupSize: Int) {
         val button = dialog.findViewById<ImageButton>(buttonId)
         button.setOnClickListener {
-            selectedCupSize = cupSize // Save the selected cup size
+            selectedCupSize = cupSize
             Toast.makeText(this, "Selected: $selectedCupSize ml", Toast.LENGTH_SHORT).show()
             highlightSelectedButton(dialog, button)
         }
@@ -182,7 +172,7 @@ class HomeActivity : AppCompatActivity() {
         val gridLayout = dialog.findViewById<GridLayout>(R.id.gridLayout)
         for (i in 0 until gridLayout.childCount) {
             val button = gridLayout.getChildAt(i) as ImageButton
-            button.setBackgroundResource(0)  // Reset background
+            button.setBackgroundResource(0)
         }
         selectedButton.setBackgroundColor(resources.getColor(R.color.colorPrimary))
     }

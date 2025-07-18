@@ -13,47 +13,17 @@
         android:layout_weight="1"
         android:orientation="vertical">
 
-    <!-- Calendar Layout -->
-    <LinearLayout
-        android:id="@+id/calendarLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:visibility="visible">
-
-        <include layout="@layout/analytics_calendar" />
-
-    </LinearLayout>
-
-    <!-- Graph Layout -->
-    <LinearLayout
-        android:id="@+id/graphLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-        <!-- Weekly Graph Layout -->
+        <!-- Calendar Layout -->
         <LinearLayout
-            android:id="@+id/weeklyGraphLayout"
+            android:id="@+id/calendarLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:visibility="visible">
 
-        </LinearLayout>
-
-        <!-- Monthly Graph Layout -->
-        <LinearLayout
-            android:id="@+id/monthlyGraphLayout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:visibility="gone">
+            <include layout="@layout/analytics_calendar" />
 
         </LinearLayout>
-
-    </LinearLayout>
 
     </LinearLayout>
 
