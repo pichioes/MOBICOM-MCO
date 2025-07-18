@@ -208,17 +208,17 @@ class AnalyticsActivity : AppCompatActivity() {
         completionRate: Double,
         frequency: Double
     ) {
-        val weeklyText = "Weekly Average: ${weeklyAvg.toInt()}ml / Day"
-        val monthlyText = "Monthly Average: ${monthlyAvg.toInt()}ml / Day"
-        val completionText = "Average Completion: ${completionRate.toInt()}%"
-        val frequencyText = "Drink Frequency: ${"%.1f".format(frequency)} Times / Day"
+        val weeklyText = "${weeklyAvg.toInt()}ml / Day"
+        val monthlyText = "${monthlyAvg.toInt()}ml / Day"
+        val completionText = "${completionRate.toInt()}%"
+        val frequencyText = "${"%.1f".format(frequency)} Times / Day"
 
         try {
             val calendarLayout = findViewById<View>(R.id.calendarLayout)
-            calendarLayout.findViewById<TextView>(R.id.weeklyAverageTv)?.text = weeklyText
-            calendarLayout.findViewById<TextView>(R.id.monthlyAverageTv)?.text = monthlyText
-            calendarLayout.findViewById<TextView>(R.id.averageCompletionTv)?.text = completionText
-            calendarLayout.findViewById<TextView>(R.id.drinkFrequencyTv)?.text = frequencyText
+            calendarLayout.findViewById<TextView>(R.id.wAverageTv)?.text = weeklyText
+            calendarLayout.findViewById<TextView>(R.id.mAverageTv)?.text = monthlyText
+            calendarLayout.findViewById<TextView>(R.id.completionTv)?.text = completionText
+            calendarLayout.findViewById<TextView>(R.id.frequencyTv)?.text = frequencyText
         } catch (e: Exception) {
             // Handle if views not found
         }

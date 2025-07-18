@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/analyticsCalendarLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -14,7 +15,7 @@
     <com.prolificinteractive.materialcalendarview.MaterialCalendarView
         android:id="@+id/calendarView"
         android:layout_width="match_parent"
-        android:layout_height="393dp"
+        android:layout_height="420dp"
         android:layout_marginTop="16dp"
         android:background="@drawable/toggle_bg" />
 
@@ -35,7 +36,8 @@
         android:layout_width="match_parent"
         android:layout_height="263dp"
         android:orientation="vertical"
-        android:paddingTop="30dp">
+        android:paddingTop="30dp"
+        app:cardElevation="2dp">
 
         <TextView
             android:id="@+id/waterReportTv"
@@ -53,54 +55,120 @@
             android:layout_width="match_parent"
             android:layout_height="193dp"
             android:layout_marginTop="10dp"
+            android:layout_marginRight="5dp"
             android:background="@drawable/report_card_bg"
             android:gravity="center_vertical"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:orientation="horizontal"
+            android:paddingLeft="20dp"
+            android:paddingTop="18dp"
+            android:paddingRight="20dp"
+            android:paddingBottom="18dp">
 
-            <TextView
-                android:id="@+id/weeklyAverageTv"
+            <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/outfit"
-                android:text="Weekly Average:"
-                android:textSize="16sp" />
+                android:layout_height="152dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/weeklyAverageTv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/outfit"
+                    android:text="Weekly Average:"
+                    android:textSize="16sp" />
+
+                <Space
+                    android:layout_width="122dp"
+                    android:layout_height="20dp" />
+
+                <TextView
+                    android:id="@+id/monthlyAverageTv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/outfit"
+                    android:text="Monthly Average:"
+                    android:textSize="16sp" />
+
+                <Space
+                    android:layout_width="122dp"
+                    android:layout_height="20dp" />
+
+                <TextView
+                    android:id="@+id/averageCompletionTv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/outfit"
+                    android:text="Average Completion:"
+                    android:textSize="16sp" />
+
+                <Space
+                    android:layout_width="120dp"
+                    android:layout_height="20dp" />
+
+                <TextView
+                    android:id="@+id/drinkFrequencyTv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/outfit"
+                    android:text="Drink Frequency:"
+                    android:textSize="16sp" />
+            </LinearLayout>
 
             <Space
-                android:layout_width="match_parent"
-                android:layout_height="20dp" />
-
-            <TextView
-                android:id="@+id/monthlyAverageTv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/outfit"
-                android:text="Monthly Average:"
-                android:textSize="16sp" />
+                android:layout_weight="1" />
 
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="20dp" />
-
-            <TextView
-                android:id="@+id/averageCompletionTv"
+            <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/outfit"
-                android:text="Average Completion:"
-                android:textSize="16sp" />
+                android:layout_height="152dp"
+                android:layout_gravity="right"
+                android:orientation="vertical">
 
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="20dp" />
+                <TextView
+                    android:id="@+id/wAverageTv"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/outfit"
+                    android:textAlignment="viewEnd"
+                    android:textSize="16sp" />
 
-            <TextView
-                android:id="@+id/drinkFrequencyTv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/outfit"
-                android:text="Drink Frequency:"
-                android:textSize="16sp" />
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp" />
+
+                <TextView
+                    android:id="@+id/mAverageTv"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/outfit"
+                    android:textAlignment="viewEnd"
+                    android:textSize="16sp" />
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp" />
+
+                <TextView
+                    android:id="@+id/completionTv"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/outfit"
+                    android:textAlignment="viewEnd"
+                    android:textSize="16sp" />
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp" />
+
+                <TextView
+                    android:id="@+id/frequencyTv"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/outfit"
+                    android:textAlignment="viewEnd"
+                    android:textSize="16sp" />
+            </LinearLayout>
 
         </LinearLayout>
     </LinearLayout>
