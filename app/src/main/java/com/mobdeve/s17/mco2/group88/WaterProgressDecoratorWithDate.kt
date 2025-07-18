@@ -38,17 +38,17 @@ class WaterProgressSpanWithDate(
 ) : LineBackgroundSpan {
 
     private val backgroundPaint = Paint().apply {
-        color = Color.BLUE
-        alpha = 77 // 30% transparency
+        color = Color.DKGRAY
+        alpha = 50 // 30% transparency
         style = Paint.Style.STROKE
-        strokeWidth = 3f
+        strokeWidth = 7f
         isAntiAlias = true
     }
 
     private val progressPaint = Paint().apply {
         color = Color.parseColor("#64B5F6")
         style = Paint.Style.STROKE
-        strokeWidth = 3f
+        strokeWidth = 7f
         strokeCap = Paint.Cap.ROUND
         isAntiAlias = true
     }
@@ -73,7 +73,7 @@ class WaterProgressSpanWithDate(
             // Calculate circle dimensions - smaller to fit within day cell
             val centerX = (left + right) / 2f
             val centerY = (top + bottom) / 2f
-            val radius = minOf((right - left), (bottom - top)) / 2f - 16f
+            val radius = minOf((right - left), (bottom - top)) / 1f - 0f
 
             // Only draw if radius is positive
             if (radius > 0) {
