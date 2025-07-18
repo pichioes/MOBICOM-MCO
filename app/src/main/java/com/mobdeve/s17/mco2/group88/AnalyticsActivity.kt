@@ -40,6 +40,7 @@ class AnalyticsActivity : AppCompatActivity() {
         setupBottomNavigation()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun loadWaterRecordsFromIntent() {
         // Get the water records passed from HomeActivity
         val recordStrings = intent.getStringArrayListExtra("waterRecords")
@@ -53,8 +54,73 @@ class AnalyticsActivity : AppCompatActivity() {
             }
         }
 
-        // If no records were passed, you can still add some default/empty state
-        // but don't add random sample data
+        // Add sample data if no real records exist (for testing/demonstration)
+        if (waterRecords.isEmpty()) {
+            generateSampleWaterRecords()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun generateSampleWaterRecords() {
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val today = LocalDate.now()
+
+        // Generate sample data for the past 30 days
+        for (i in 0..29) {
+            val date = today.minusDays(i.toLong())
+            val dateString = date.format(formatter)
+
+            // Create varied water intake amounts to show different progress levels
+            val intake = when (i % 7) {
+                0 -> 2500 // Exceeded goal
+                1 -> 2150 // Exactly at goal
+                2 -> 1800 // Good progress
+                3 -> 1200 // Moderate progress
+                4 -> 800  // Low progress
+                5 -> 0    // No intake
+                6 -> 1600 // Decent progress
+                else -> 1000
+            }
+
+            if (intake > 0) {
+                waterRecords.add(WaterRecord(dateString, intake.toString()))
+            }
+        }
+
+        // Add some specific dates with high intake for current month
+        val currentMonth = today.month
+        val currentYear = today.year
+
+        // Add records for specific days in current month
+        val specificDays = listOf(1, 5, 10, 15, 20, 25)
+        for (day in specificDays) {
+            try {
+                val specificDate = LocalDate.of(currentYear, currentMonth, day)
+                val dateString = specificDate.format(formatter)
+
+                // Remove any existing record for this date
+                waterRecords.removeAll { it.time == dateString }
+
+                // Add new record with high intake
+                val intake = when (day) {
+                    1 -> 2300  // 107% of goal
+                    5 -> 1900  // 88% of goal
+                    10 -> 2150 // 100% of goal
+                    15 -> 1400 // 65% of goal
+                    20 -> 2600 // 121% of goal
+                    25 -> 1100 // 51% of goal
+                    else -> 1500
+                }
+
+                waterRecords.add(WaterRecord(dateString, intake.toString()))
+            } catch (e: Exception) {
+                // Skip if day doesn't exist in current month
+            }
+        }
+
+        // Add today's record
+        waterRecords.removeAll { it.time == today.format(formatter) }
+        waterRecords.add(WaterRecord(today.format(formatter), "1750"))
     }
 
     private fun setupBottomNavigation() {
