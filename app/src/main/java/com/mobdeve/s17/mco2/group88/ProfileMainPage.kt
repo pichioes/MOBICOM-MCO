@@ -1,21 +1,18 @@
 package com.mobdeve.s17.mco2.group88
 
+import android.content.Context
 import android.content.Intent
-import android.content.res.ColorStateList
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.widget.Button
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.Switch
-import android.widget.Spinner
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import android.content.res.ColorStateList
 
 class ProfileMainPage : AppCompatActivity() {
 
@@ -46,7 +43,7 @@ class ProfileMainPage : AppCompatActivity() {
 
         // Handling click for notifications section
         val notificationsLayer = findViewById<View>(R.id.notifications_layer)
-                notificationsLayer.setOnClickListener {
+        notificationsLayer.setOnClickListener {
             showNotificationsPopup()  // Show the notifications popup
         }
 
@@ -163,17 +160,17 @@ class ProfileMainPage : AppCompatActivity() {
 
     // Handle user logout functionality
     private fun logoutUser() {
-        // Clear user data (e.g., SharedPreferences, FirebaseAuth, etc.)
-        val sharedPreferences = getSharedPreferences("user_prefs", MODE_PRIVATE)
+        // Clear user data (e.g., SharedPreferences)
+        val sharedPreferences = getSharedPreferences("AquaBuddyPrefs", MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         editor.clear()  // Clear all user data
         editor.apply()
 
-        // Navigate back to login screen or home page
+        // Navigate back to login screen
         val intent = Intent(this, LoginActivity::class.java)  // Navigate to your login activity
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK  // Clear the stack
         startActivity(intent)
-        finish()  // Close the current activity
+        finish()  // Close the current activity to prevent returning back to it
     }
 
     // Show Notifications Popup
