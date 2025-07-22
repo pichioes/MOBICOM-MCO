@@ -29,7 +29,8 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun CircularProgressWithCap(
     goalAmount: Int = 2150,
-    onWaterIntake: (WaterRecord) -> Unit // Accept the callback
+    selectedCupSize: Int,  // Accept selected cup size as a parameter
+    onWaterIntake: (WaterRecord) -> Unit
 ) {
     val strokeWidthDp = 23.dp
     val sizeDp = 260.dp
@@ -117,7 +118,7 @@ fun CircularProgressWithCap(
                         interactionSource = interactionSource,
                         indication = null
                     ) {
-                        currentIntake += 250
+                        currentIntake += selectedCupSize // Update based on selected cup size
 
                         // Get the current time in 12-hour format
                         val currentTime = LocalTime.now()
@@ -125,7 +126,7 @@ fun CircularProgressWithCap(
                         val formattedTime = currentTime.format(formatter)
 
                         // Create a new water record
-                        val record = WaterRecord(time = formattedTime, amount = "250 ml")
+                        val record = WaterRecord(time = formattedTime, amount = "$selectedCupSize ml")
 
                         // Trigger the onWaterIntake callback
                         onWaterIntake(record)
@@ -134,5 +135,9 @@ fun CircularProgressWithCap(
         }
     }
 }
+
+
+
+
 
 

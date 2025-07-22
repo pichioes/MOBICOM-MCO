@@ -10,6 +10,8 @@ import android.app.Dialog
 import android.content.res.ColorStateList
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.runtime.mutableStateOf  // Use mutableStateOf to track the state
+import androidx.compose.runtime.remember
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import android.widget.GridLayout
@@ -21,7 +23,7 @@ import java.util.*
 class HomeActivity : AppCompatActivity() {
 
     private val waterRecords = mutableListOf<WaterRecord>()
-    private var selectedCupSize = 250
+    private var selectedCupSize = mutableStateOf(250)  // Using mutableStateOf to track cup size state
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,10 +37,12 @@ class HomeActivity : AppCompatActivity() {
             WeekBar(userProgress = userProgress)
         }
 
+        // Pass selectedCupSize as a parameter to the composable
         val circularProgressComposeView = findViewById<ComposeView>(R.id.composeProgress)
         circularProgressComposeView.setContent {
             CircularProgressWithCap(
                 goalAmount = 2150,
+                selectedCupSize = selectedCupSize.value,  // Pass the selected cup size here
                 onWaterIntake = { record ->
                     waterRecords.add(0, record)
                     updateRecyclerView()
@@ -108,6 +112,7 @@ class HomeActivity : AppCompatActivity() {
             dialog.dismiss()
         }
 
+        // Setting up button listeners for each cup size
         setCupSizeButtonClickListener(dialog, R.id.btn_100ml, 100)
         setCupSizeButtonClickListener(dialog, R.id.btn_125ml, 125)
         setCupSizeButtonClickListener(dialog, R.id.btn_150ml, 150)
@@ -123,7 +128,7 @@ class HomeActivity : AppCompatActivity() {
 
         val confirmButton = dialog.findViewById<Button>(R.id.confirmButton)
         confirmButton.setOnClickListener {
-            Toast.makeText(this, "Cup Size Confirmed: $selectedCupSize ml", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Cup Size Confirmed: ${selectedCupSize.value} ml", Toast.LENGTH_SHORT).show()
             dialog.dismiss()
         }
 
@@ -147,8 +152,8 @@ class HomeActivity : AppCompatActivity() {
             val customCupSize = cupSizeInput.text.toString().toIntOrNull()
 
             if (customCupSize != null && customCupSize > 0) {
-                selectedCupSize = customCupSize
-                Toast.makeText(this, "Custom Cup Size Confirmed: $selectedCupSize ml", Toast.LENGTH_SHORT).show()
+                selectedCupSize.value = customCupSize
+                Toast.makeText(this, "Custom Cup Size Confirmed: ${selectedCupSize.value} ml", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(this, "Please enter a valid cup size", Toast.LENGTH_SHORT).show()
             }
@@ -162,8 +167,8 @@ class HomeActivity : AppCompatActivity() {
     private fun setCupSizeButtonClickListener(dialog: Dialog, buttonId: Int, cupSize: Int) {
         val button = dialog.findViewById<ImageButton>(buttonId)
         button.setOnClickListener {
-            selectedCupSize = cupSize
-            Toast.makeText(this, "Selected: $selectedCupSize ml", Toast.LENGTH_SHORT).show()
+            selectedCupSize.value = cupSize
+            Toast.makeText(this, "Selected: ${selectedCupSize.value} ml", Toast.LENGTH_SHORT).show()
             highlightSelectedButton(dialog, button)
         }
     }
