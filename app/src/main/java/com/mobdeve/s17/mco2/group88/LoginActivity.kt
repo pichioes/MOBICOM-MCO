@@ -149,9 +149,6 @@ class LoginActivity : AppCompatActivity() {
         if (password.isEmpty()) {
             passwordInput.error = "Password is required"
             isValid = false
-        } else if (password.length < 6) {
-            passwordInput.error = "Password must be at least 6 characters"
-            isValid = false
         } else {
             passwordInput.error = null
         }

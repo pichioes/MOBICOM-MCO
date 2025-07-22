@@ -19,7 +19,7 @@ class SignupActivity : AppCompatActivity() {
 
         dbHelper = AquaBuddyDatabaseHelper(this)
 
-        // Input fields for signup
+        // Input fields for sign-up
         val emailInput = findViewById<EditText>(R.id.emailInput)
         val passwordInput = findViewById<EditText>(R.id.passwordInput)
         val confirmPasswordInput = findViewById<EditText>(R.id.confirmPasswordInput)
@@ -53,12 +53,12 @@ class SignupActivity : AppCompatActivity() {
             confirmPasswordInput.setSelection(pos)
         }
 
-        // Navigate to login page
+        // Navigate to login page if the user already has an account
         loginHereLink.setOnClickListener {
             startActivity(Intent(this, LoginActivity::class.java))
         }
 
-        // Handle create account logic
+        // Handle create account logic (for email/password)
         createAccountButton.setOnClickListener {
             val email = emailInput.text.toString().trim()
             val password = passwordInput.text.toString().trim()
@@ -76,50 +76,25 @@ class SignupActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Hash the password
+            // Hash the password before inserting it
             val hashedPassword = hashPassword(password)
 
-            // Create user object (with empty profile initially)
-            val newUser = User(
-                name = "", // Empty name initially, to be filled in Profile Creation
-                email = email,
-                passwordHash = hashedPassword,
-                age = 0,
-                weight = 0.0,
-                height = 0.0,
-                sex = "",
-                dailyWaterGoal = 2000, // Default or from input
-                notificationFrequency = 60 // Default or from input
-            )
+            // Store email and password hash temporarily in SharedPreferences
+            val sharedPreferences = getSharedPreferences("AquaBuddyPrefs", Context.MODE_PRIVATE)
+            val editor = sharedPreferences.edit()
+            editor.putString("user_email", email)
+            editor.putString("user_password_hash", hashedPassword)
+            editor.apply()
 
-            // Insert the user into the database
-            val userId = dbHelper.insertUser(newUser)
-
-            if (userId > 0) {
-                // Successfully created, navigate to profile creation
-                navigateToProfileCreation(userId)
-            } else {
-                Toast.makeText(this, "Error creating account", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        // Back navigation logic
-        val backButton = findViewById<ImageButton>(R.id.signupBackButton)
-        backButton.setOnClickListener {
-            finish()  // This will close the SignupActivity and navigate back to the previous activity
+            // Navigate to profile creation
+            navigateToProfileCreation()
         }
     }
 
-    private fun navigateToProfileCreation(userId: Long) {
-        // Store the user's ID temporarily for profile creation
-        val sharedPreferences = getSharedPreferences("AquaBuddyPrefs", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        editor.putLong("user_id", userId)
-        editor.apply()
-
-        // Navigate to profile creation activity
+    private fun navigateToProfileCreation() {
+        // Move to profile creation activity
         val intent = Intent(this, CreateProfileActivity::class.java)
         startActivity(intent)
-        finish()  // Close SignupActivity so user cannot go back
+        finish()  // Close SignupActivity
     }
 }

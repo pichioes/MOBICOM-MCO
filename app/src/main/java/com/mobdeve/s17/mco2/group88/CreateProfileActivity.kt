@@ -7,7 +7,6 @@ import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 
 class CreateProfileActivity : AppCompatActivity() {
 
@@ -27,18 +26,16 @@ class CreateProfileActivity : AppCompatActivity() {
         val dbHelper = AquaBuddyDatabaseHelper(this)
         val sharedPreferences = getSharedPreferences("AquaBuddyPrefs", Context.MODE_PRIVATE)
 
-        // Retrieve the email from SharedPreferences to pass to User object
+        // Retrieve stored email and password from SharedPreferences
         val email = sharedPreferences.getString("user_email", "") ?: ""
-
-        // Retrieve userId from SharedPreferences (stored during signup)
-        val userId = sharedPreferences.getLong("user_id", -1L)
+        val passwordHash = sharedPreferences.getString("user_password_hash", "") ?: ""
 
         // Back navigation
         backButton.setOnClickListener {
-            finish()
+            finish()  // Close this activity and go back
         }
 
-        // Continue Button logic
+        // Continue Button logic for saving profile data
         continueButton.setOnClickListener {
             val name = nameInput.text.toString().trim()
             val age = ageInput.text.toString().trim()
@@ -59,26 +56,26 @@ class CreateProfileActivity : AppCompatActivity() {
 
             // Save profile data in SQLite database
             val updatedUser = User(
-                id = userId,
-                email = email,  // Pass the email retrieved from SharedPreferences
+                id = 0,  // Auto-generated ID
+                email = email,  // Email passed from SharedPreferences
+                passwordHash = passwordHash,  // Password hash passed from SharedPreferences
                 name = name,
                 age = age.toInt(),
                 height = height.toDouble(),
                 weight = weight.toDouble(),
                 sex = selectedGender,
-                dailyWaterGoal = 2000, // Default or from input
-                notificationFrequency = 60 // Default or from input
+                dailyWaterGoal = 2000, // Default value
+                notificationFrequency = 60 // Default value
             )
 
-            // Update user profile in the database
-            dbHelper.updateUser(updatedUser)
+            // Insert user data into the database
+            val userId = dbHelper.insertUser(updatedUser)
 
-            // Show confirmation popup
+            // Show confirmation popup and navigate to HomeActivity
             showAccountCreatedPopup(name)
         }
     }
 
-    // Function to show the account created popup
     private fun showAccountCreatedPopup(name: String) {
         val dialogView = layoutInflater.inflate(R.layout.popup_accountcreated, null)
         val dialog = android.app.AlertDialog.Builder(this)
@@ -105,15 +102,14 @@ class CreateProfileActivity : AppCompatActivity() {
             // Show a welcome message
             Toast.makeText(this, "Welcome, $name!", Toast.LENGTH_SHORT).show()
 
-            // After completing the profile, navigate to HomeActivity (or another activity)
+            // After profile update, navigate to HomeActivity
             navigateToHome()
         }
     }
 
-    // Function to navigate to HomeActivity (or wherever you want after profile creation)
     private fun navigateToHome() {
         val intent = Intent(this, HomeActivity::class.java)
         startActivity(intent)
-        finish()  // Close this activity so the user can't go back to it
+        finish()  // Close this activity
     }
 }
