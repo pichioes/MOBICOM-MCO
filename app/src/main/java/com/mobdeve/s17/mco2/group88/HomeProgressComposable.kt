@@ -118,6 +118,7 @@ fun CircularProgressWithCap(
                         interactionSource = interactionSource,
                         indication = null
                     ) {
+                        // Update the current intake
                         currentIntake += selectedCupSize // Update based on selected cup size
 
                         // Get the current time in 12-hour format
@@ -126,7 +127,7 @@ fun CircularProgressWithCap(
                         val formattedTime = currentTime.format(formatter)
 
                         // Create a new water record
-                        val record = WaterRecord(time = formattedTime, amount = "$selectedCupSize ml")
+                        val record = WaterRecord(time = formattedTime, amount = selectedCupSize.toString())  // Convert to String without "ml" suffix
 
                         // Trigger the onWaterIntake callback
                         onWaterIntake(record)
@@ -135,9 +136,3 @@ fun CircularProgressWithCap(
         }
     }
 }
-
-
-
-
-
-
