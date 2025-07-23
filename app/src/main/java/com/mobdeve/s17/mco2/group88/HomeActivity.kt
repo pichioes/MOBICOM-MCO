@@ -197,28 +197,59 @@ class HomeActivity : AppCompatActivity() {
 
     // Function to calculate water intake progress for the last 7 days
     private fun calculateWaterIntakeProgress(dbHelper: AquaBuddyDatabaseHelper): Array<Int> {
-        val progressForLast7Days = Array(7) { 0 }
+        val progressArray = Array(7) { -1 } // Initialize with -1 to indicate no data
 
-        // Get water intake history for the last 7 days
-        for (i in 0 until 7) {
-            // Get the date for each day in the last 7 days
-            val date = LocalDate.now().minusDays(i.toLong()).toString()
+        // Get current date
+        val today = LocalDate.now()
 
-            // Get water intake data for the given date
-            val waterIntakes = dbHelper.getWaterIntakeHistory(userId, date) // Use actual userId
+        // Get current day of week (0 = Sunday, 1 = Monday, etc.)
+        val calendar = Calendar.getInstance()
+        val todayIndex = when (calendar.get(Calendar.DAY_OF_WEEK)) {
+            Calendar.SUNDAY -> 0
+            Calendar.MONDAY -> 1
+            Calendar.TUESDAY -> 2
+            Calendar.WEDNESDAY -> 3
+            Calendar.THURSDAY -> 4
+            Calendar.FRIDAY -> 5
+            Calendar.SATURDAY -> 6
+            else -> 0
+        }
+
+        println("=== PROGRESS CALCULATION DEBUG ===")
+        println("Today index: $todayIndex")
+
+        // Calculate progress for each day of the current week
+        for (dayOffset in 0..6) {
+            // Calculate which day of the week this represents
+            val dayIndex = (todayIndex - dayOffset + 7) % 7
+
+            // Get the actual date for this day
+            val date = today.minusDays(dayOffset.toLong()).toString()
+
+            // Get water intake data for this date
+            val waterIntakes = dbHelper.getWaterIntakeHistory(userId, date)
 
             // Calculate total intake for the day
             val totalIntakeForDay = waterIntakes.sumOf { it.amount }
 
-            // Calculate progress based on the total intake (assumed daily goal is 2150 ml)
-            val progress = (totalIntakeForDay.toFloat() / 2150) * 100
+            // Calculate progress percentage (daily goal is 2150 ml)
+            val progress = if (totalIntakeForDay > 0) {
+                ((totalIntakeForDay.toFloat() / 2150) * 100).toInt().coerceIn(0, 100)
+            } else {
+                0 // 0 means no intake, -1 means no data (which we don't use here)
+            }
 
-            // Store the progress for the day (we assume 100% is the goal)
-            progressForLast7Days[i] = progress.toInt()
+            progressArray[dayIndex] = progress
+
+            println("Day offset: $dayOffset, Day index: $dayIndex, Date: $date, Progress: $progress")
         }
 
-        return progressForLast7Days
+        println("Final progress array: ${progressArray.contentToString()}")
+        println("===================================")
+
+        return progressArray
     }
+
 
     private fun setupBottomNavigation() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigationView)

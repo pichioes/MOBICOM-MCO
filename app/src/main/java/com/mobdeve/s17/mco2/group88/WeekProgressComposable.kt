@@ -17,24 +17,49 @@ import androidx.compose.foundation.background
 import androidx.compose.ui.platform.LocalContext
 import java.time.LocalDate
 import java.time.DayOfWeek
+import java.util.Calendar
+import java.util.Locale
+import java.text.SimpleDateFormat
+import java.util.Date
 
 @Composable
 @RequiresApi(Build.VERSION_CODES.O) // Only for API level 26 and higher
 fun WeekBar(userProgress: Array<Int>) { // Accept userProgress as a parameter
     val weekDays = arrayOf("S", "M", "T", "W", "T", "F", "S")
 
-    // Get the current day of the week
-    val currentDayOfWeek = LocalDate.now().dayOfWeek
-    val currentDay = when (currentDayOfWeek) {
-        DayOfWeek.MONDAY -> 1
-        DayOfWeek.TUESDAY -> 2
-        DayOfWeek.WEDNESDAY -> 3
-        DayOfWeek.THURSDAY -> 4
-        DayOfWeek.FRIDAY -> 5
-        DayOfWeek.SATURDAY -> 6
-        DayOfWeek.SUNDAY -> 0
-        else -> 0 // Fallback case
+    // Multiple methods to get current day for debugging
+    val calendar = Calendar.getInstance()
+    val systemDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
+
+    // Also try with SimpleDateFormat for comparison
+    val dateFormat = SimpleDateFormat("EEEE", Locale.getDefault())
+    val currentDayName = dateFormat.format(Date())
+
+    // Also try System.currentTimeMillis
+    val currentTime = System.currentTimeMillis()
+    val calendarFromMillis = Calendar.getInstance().apply { timeInMillis = currentTime }
+    val dayFromMillis = calendarFromMillis.get(Calendar.DAY_OF_WEEK)
+
+    // Convert Calendar day to array index
+    val currentDay = when (systemDayOfWeek) {
+        Calendar.SUNDAY -> 0
+        Calendar.MONDAY -> 1
+        Calendar.TUESDAY -> 2
+        Calendar.WEDNESDAY -> 3
+        Calendar.THURSDAY -> 4
+        Calendar.FRIDAY -> 5
+        Calendar.SATURDAY -> 6
+        else -> 0
     }
+
+    // Extensive debug output
+    println("=== DAY DEBUG INFO ===")
+    println("Calendar.DAY_OF_WEEK: $systemDayOfWeek")
+    println("Day from millis: $dayFromMillis")
+    println("SimpleDateFormat day: $currentDayName")
+    println("Current time millis: $currentTime")
+    println("Calculated array index: $currentDay")
+    println("======================")
 
     // Create a horizontal row to hold the days and their progress bars
     Column(
@@ -65,26 +90,17 @@ fun WeekBar(userProgress: Array<Int>) { // Accept userProgress as a parameter
                             val size = size.minDimension
                             val strokeWidth = 6f // Stroke width for the circle
 
-                            // Determine progress for the day based on the current day
+                            // Check if there's valid data for this day
+                            val hasData = userProgress.size > index && userProgress[index] >= 0
+
+                            // Determine progress for the day based on the current day and data availability
                             val progress = when {
-                                index > currentDay -> 0f // No progress for future days
-                                else -> userProgress[index] / 100f // Normal progress for current and past days
+                                !hasData -> 0f // No data available, show no progress
+                                index > currentDay -> 0f // Future days show no progress
+                                else -> (userProgress[index].coerceIn(0, 100)) / 100f // Current and past days with valid data
                             }
 
-                            // Draw the progress circle
-                            drawArc(
-                                color = when {
-                                    userProgress[index] == 100 -> ComposeColor(0xFF32CD32) // Green (Completed)
-                                    index < currentDay -> ComposeColor(0xFF64B5F6) // Light Blue (In Progress)
-                                    else -> ComposeColor(0xFF6E8DAE) // Grayish Blue (Future Day)
-                                },
-                                startAngle = -90f,
-                                sweepAngle = 360f * progress,
-                                useCenter = false,
-                                style = Stroke(width = strokeWidth)
-                            )
-
-                            // Draw the background arc
+                            // Draw the background arc first
                             drawArc(
                                 color = Color.Gray.copy(alpha = 0.3f),
                                 startAngle = 0f,
@@ -92,6 +108,22 @@ fun WeekBar(userProgress: Array<Int>) { // Accept userProgress as a parameter
                                 useCenter = false,
                                 style = Stroke(width = strokeWidth)
                             )
+
+                            // Draw the progress circle on top
+                            if (progress > 0f && hasData) {
+                                drawArc(
+                                    color = when {
+                                        userProgress[index] >= 100 -> ComposeColor(0xFF32CD32) // Green (Completed)
+                                        index == currentDay -> ComposeColor(0xFFFFD700) // Gold for current day with progress
+                                        index < currentDay -> ComposeColor(0xFF64B5F6) // Light Blue (Past days with progress)
+                                        else -> ComposeColor(0xFF6E8DAE) // Grayish Blue (shouldn't reach here)
+                                    },
+                                    startAngle = -90f,
+                                    sweepAngle = 360f * progress,
+                                    useCenter = false,
+                                    style = Stroke(width = strokeWidth)
+                                )
+                            }
                         }
 
                         // Day Text in the Center of the Circle
