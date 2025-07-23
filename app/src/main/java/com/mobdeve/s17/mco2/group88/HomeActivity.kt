@@ -92,6 +92,7 @@ class HomeActivity : AppCompatActivity() {
                 selectedCupSize = selectedCupSize.value,  // Pass the selected cup size here
                 currentIntake = currentIntake.value, // Pass current intake here
                 onWaterIntake = { record ->
+                    // Add new record to the beginning of the list to show newest first
                     waterRecords.add(0, record)
                     updateRecyclerView()
                     // Log water intake to database
@@ -118,17 +119,36 @@ class HomeActivity : AppCompatActivity() {
         var totalToday = 0
         waterRecords.clear()
 
-        // Sum the intake for today and add records to the list
-        for (intake in waterIntakes) {
+        // Sort water intakes by time in reverse chronological order (newest first)
+        val sortedIntakes = waterIntakes.sortedByDescending { intake ->
+            // Parse the time string and convert to comparable format
+            parseTimeToMinutes(intake.time)
+        }
+
+        // Add records to the list in reverse chronological order (newest first)
+        for (intake in sortedIntakes) {
             val record = WaterRecord(
                 time = intake.time,
                 amount = intake.amount.toString()
             )
-            waterRecords.add(record)
+            waterRecords.add(record) // Add to end of list since we already sorted in reverse
             totalToday += intake.amount // Add the amount to the total for the day
         }
 
         currentIntake.value = totalToday // Set the current intake for the day
+    }
+
+    // Helper function to parse time string to minutes for sorting
+    private fun parseTimeToMinutes(timeString: String): Int {
+        try {
+            val format = SimpleDateFormat("h:mm a", Locale.getDefault())
+            val date = format.parse(timeString)
+            val calendar = Calendar.getInstance()
+            calendar.time = date ?: return 0
+            return calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)
+        } catch (e: Exception) {
+            return 0 // Return 0 if parsing fails
+        }
     }
 
     private fun resetTimer(nextSipTextView: TextView) {
