@@ -20,6 +20,7 @@ import android.content.Intent
 import androidx.compose.ui.tooling.preview.Preview
 import java.time.LocalDate
 
+
 class HomeActivity : AppCompatActivity() {
 
     private val waterRecords = mutableListOf<WaterRecord>()
@@ -28,8 +29,12 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var userNameTextView: TextView
     private lateinit var streakTextView: TextView
     private lateinit var goalPercentageTextView: TextView
+    private lateinit var nextSipTextView: TextView  // Added as class property for easier access
     private var userId: Long = -1
     private var currentIntake = mutableStateOf(0) // This will store the current intake for the day.
+
+    private var timer: Timer? = null
+    private var timerTask: TimerTask? = null
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,6 +51,7 @@ class HomeActivity : AppCompatActivity() {
         userNameTextView = findViewById(R.id.userName)
         streakTextView = findViewById(R.id.Streak)  // Streak TextView
         goalPercentageTextView = findViewById(R.id.GoalPercentage)  // Goal Percentage TextView
+        nextSipTextView = findViewById<TextView>(R.id.NextSip)  // Initialize as class property
 
         // Set the username in the TextView
         userNameTextView.text = user?.name ?: "User"
@@ -67,7 +73,6 @@ class HomeActivity : AppCompatActivity() {
         }
 
         // Set up notification countdown
-        val nextSipTextView = findViewById<TextView>(R.id.NextSip)
         startNextSipCountdown(nextSipTextView)
 
         val weekBarComposeView = findViewById<ComposeView>(R.id.WeekBar)
@@ -96,6 +101,9 @@ class HomeActivity : AppCompatActivity() {
 
                     // Update the current intake when water is added
                     currentIntake.value += selectedCupSize.value
+
+                    // RESET THE TIMER WHEN NEW WATER INTAKE IS RECORDED
+                    resetTimer(nextSipTextView)
                 }
             )
         }
@@ -121,6 +129,15 @@ class HomeActivity : AppCompatActivity() {
         }
 
         currentIntake.value = totalToday // Set the current intake for the day
+    }
+
+    private fun resetTimer(nextSipTextView: TextView) {
+        // Cancel the existing timer if it exists
+        timerTask?.cancel()
+        timer?.cancel()
+
+        // Start a new timer
+        startNextSipCountdown(nextSipTextView)
     }
 
     private fun updateStreakAndGoalPercentage() {
@@ -331,13 +348,17 @@ class HomeActivity : AppCompatActivity() {
         return SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
     }
 
+    private fun getCurrentDateTime(): String {
+        return SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+    }
+
     private fun startNextSipCountdown(nextSipTextView: TextView) {
         val notificationFrequency = 60  // Replace with the actual notification frequency from the user settings or profile
 
-        // Assuming you want to start with a timer
-        val timer = Timer()
-        val task = object : TimerTask() {
-            var timeLeft = notificationFrequency
+        // Create a new timer and task
+        timer = Timer()
+        timerTask = object : TimerTask() {
+            var timeLeft = notificationFrequency + 1
 
             override fun run() {
                 runOnUiThread {
@@ -353,7 +374,7 @@ class HomeActivity : AppCompatActivity() {
         }
 
         // Schedule the timer to update every minute
-        timer.scheduleAtFixedRate(task, 0, 60000)  // 60000ms = 1 minute
+        timer?.scheduleAtFixedRate(timerTask, 0, 60000)  // 60000ms = 1 minute
     }
 
     private fun logWaterIntake(record: WaterRecord) {
@@ -365,5 +386,12 @@ class HomeActivity : AppCompatActivity() {
             createdAt = getCurrentDateTime()
         )
         dbHelper.logWaterIntake(intake)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Clean up timer when activity is destroyed
+        timerTask?.cancel()
+        timer?.cancel()
     }
 }
