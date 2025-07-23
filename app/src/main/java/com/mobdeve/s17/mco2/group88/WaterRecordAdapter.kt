@@ -20,7 +20,7 @@ class WaterRecordAdapter(private val waterRecords: List<WaterRecord>) :
     override fun onBindViewHolder(holder: WaterRecordViewHolder, position: Int) {
         val record = waterRecords[position]
         holder.timeTextView.text = record.time
-        holder.amountTextView.text = record.amount
+        holder.amountTextView.text = "${record.amount} ml"
     }
 
     override fun getItemCount(): Int = waterRecords.size
