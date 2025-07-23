@@ -71,9 +71,46 @@ class CreateProfileActivity : AppCompatActivity() {
             // Insert user data into the database
             val userId = dbHelper.insertUser(updatedUser)
 
-            // Show confirmation popup and navigate to HomeActivity
-            showAccountCreatedPopup(name)
+            // Debug: Check if userId is valid
+            println("DEBUG: Created user with ID: $userId")
+
+            if (userId > 0) {
+                // SAVE THE USER ID TO SHAREDPREFERENCES
+                saveUserSession(userId, name)
+
+                // Show confirmation popup and navigate to HomeActivity
+                showAccountCreatedPopup(name)
+            } else {
+                Toast.makeText(this, "Error creating account. Please try again.", Toast.LENGTH_SHORT).show()
+                println("DEBUG: Failed to create user - insertUser returned: $userId")
+            }
         }
+    }
+
+    private fun saveUserSession(userId: Long, userName: String) {
+        val sharedPreferences = getSharedPreferences("AquaBuddyPrefs", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+
+        // Save the user ID (this is the key fix!)
+        editor.putLong("user_id", userId)
+
+        // Optionally save the name for quick access
+        editor.putString("user_name", userName)
+
+        // Apply the changes
+        editor.apply()
+
+        // Debug: Confirm what was saved
+        println("DEBUG: Saved to SharedPreferences:")
+        println("  - user_id: $userId")
+        println("  - user_name: $userName")
+
+        // Verify it was saved correctly
+        val savedUserId = sharedPreferences.getLong("user_id", -1L)
+        val savedUserName = sharedPreferences.getString("user_name", "")
+        println("DEBUG: Verification - Retrieved from SharedPreferences:")
+        println("  - user_id: $savedUserId")
+        println("  - user_name: $savedUserName")
     }
 
     private fun showAccountCreatedPopup(name: String) {
