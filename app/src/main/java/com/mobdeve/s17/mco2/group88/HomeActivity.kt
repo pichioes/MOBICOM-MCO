@@ -33,6 +33,9 @@ class HomeActivity : AppCompatActivity() {
     private var userId: Long = -1
     private var currentIntake = mutableStateOf(0) // This will store the current intake for the day.
 
+    // Add mutable state for week progress to make it reactive
+    private var weekProgress = mutableStateOf(Array(7) { -1 })
+
     private var timer: Timer? = null
     private var timerTask: TimerTask? = null
 
@@ -61,6 +64,9 @@ class HomeActivity : AppCompatActivity() {
         // Fetch water intake records from the database
         fetchWaterIntake()
 
+        // Initialize week progress
+        updateWeekProgress()
+
         // RecyclerView setup
         val recyclerView = findViewById<RecyclerView>(R.id.recordsRecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -77,11 +83,8 @@ class HomeActivity : AppCompatActivity() {
 
         val weekBarComposeView = findViewById<ComposeView>(R.id.WeekBar)
         weekBarComposeView.setContent {
-            // Fetch the progress for the last 7 days
-            val progressForLast7Days = calculateWaterIntakeProgress(dbHelper)
-
-            // Pass the progress to the WeekBar composable
-            WeekBar(userProgress = progressForLast7Days) // Ensure that userProgress is passed here
+            // Use the reactive weekProgress state
+            WeekBar(userProgress = weekProgress.value)
         }
 
         // Compose view for the CircularProgressWithCap (water intake progress)
@@ -102,6 +105,9 @@ class HomeActivity : AppCompatActivity() {
 
                     // Update the current intake when water is added
                     currentIntake.value += selectedCupSize.value
+
+                    // Update week progress in real-time
+                    updateWeekProgress()
 
                     // RESET THE TIMER WHEN NEW WATER INTAKE IS RECORDED
                     resetTimer(nextSipTextView)
@@ -195,7 +201,14 @@ class HomeActivity : AppCompatActivity() {
         return streak
     }
 
+    // New function to update week progress and trigger recomposition
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun updateWeekProgress() {
+        weekProgress.value = calculateWaterIntakeProgress(dbHelper)
+    }
+
     // Function to calculate water intake progress for the last 7 days
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun calculateWaterIntakeProgress(dbHelper: AquaBuddyDatabaseHelper): Array<Int> {
         val progressArray = Array(7) { -1 } // Initialize with -1 to indicate no data
 
