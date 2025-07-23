@@ -2,25 +2,25 @@ package com.mobdeve.s17.mco2.group88
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.background
+import androidx.compose.ui.platform.LocalContext
 import java.time.LocalDate
 import java.time.DayOfWeek
 
 @Composable
 @RequiresApi(Build.VERSION_CODES.O) // Only for API level 26 and higher
-fun WeekBar(userProgress: Array<Int>) {
+fun WeekBar(userProgress: Array<Int>) { // Accept userProgress as a parameter
     val weekDays = arrayOf("S", "M", "T", "W", "T", "F", "S")
 
     // Get the current day of the week
@@ -105,12 +105,4 @@ fun WeekBar(userProgress: Array<Int>) {
             }
         }
     }
-}
-
-@Preview
-@Composable
-fun PreviewWeekBar() {
-    // Example progress array where each element represents progress for each day (0 - 100)
-    val userProgress = arrayOf(100, 80, 60, 40, 0, 0, 0)
-    WeekBar(userProgress = userProgress)
 }

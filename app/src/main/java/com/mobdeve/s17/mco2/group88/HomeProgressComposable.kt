@@ -30,6 +30,7 @@ import java.time.format.DateTimeFormatter
 fun CircularProgressWithCap(
     goalAmount: Int = 2150,
     selectedCupSize: Int,  // Accept selected cup size as a parameter
+    currentIntake: Int,    // Accept current intake as a parameter
     onWaterIntake: (WaterRecord) -> Unit
 ) {
     val strokeWidthDp = 23.dp
@@ -37,7 +38,7 @@ fun CircularProgressWithCap(
     val strokeWidthPx = with(LocalDensity.current) { strokeWidthDp.toPx() }
     val outfit = FontFamily(Font(R.font.outfit))
 
-    var currentIntake by remember { mutableStateOf(0) }
+    // Calculate the progress based on current intake
     val progress = (currentIntake.toFloat() / goalAmount).coerceIn(0f, 1f)
 
     Box(
@@ -119,7 +120,7 @@ fun CircularProgressWithCap(
                         indication = null
                     ) {
                         // Update the current intake
-                        currentIntake += selectedCupSize // Update based on selected cup size
+                        val newIntake = currentIntake + selectedCupSize
 
                         // Get the current time in 12-hour format
                         val currentTime = LocalTime.now()
@@ -127,7 +128,7 @@ fun CircularProgressWithCap(
                         val formattedTime = currentTime.format(formatter)
 
                         // Create a new water record
-                        val record = WaterRecord(time = formattedTime, amount = selectedCupSize.toString())  // Convert to String without "ml" suffix
+                        val record = WaterRecord(time = formattedTime, amount = selectedCupSize.toString())
 
                         // Trigger the onWaterIntake callback
                         onWaterIntake(record)
@@ -136,3 +137,5 @@ fun CircularProgressWithCap(
         }
     }
 }
+
+

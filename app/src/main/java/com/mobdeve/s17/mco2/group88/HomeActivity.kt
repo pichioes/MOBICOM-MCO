@@ -1,6 +1,5 @@
 package com.mobdeve.s17.mco2.group88
 
-import android.content.Intent
 import android.os.Bundle
 import android.widget.*
 import android.app.Dialog
@@ -12,12 +11,14 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.runtime.mutableStateOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import android.widget.GridLayout
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import java.text.SimpleDateFormat
 import java.util.*
+import android.content.Intent
+import androidx.compose.ui.tooling.preview.Preview
+import java.time.LocalDate
 
 class HomeActivity : AppCompatActivity() {
 
@@ -28,6 +29,7 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var streakTextView: TextView
     private lateinit var goalPercentageTextView: TextView
     private var userId: Long = -1
+    private var currentIntake = mutableStateOf(0) // This will store the current intake for the day.
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,24 +53,13 @@ class HomeActivity : AppCompatActivity() {
         setupBottomNavigation()
 
         // Fetch water intake records from the database
-        val waterIntakes = dbHelper.getWaterIntakeHistory(userId, getCurrentDate())
-
-        // Map the WaterIntake records to WaterRecord
-        waterRecords.clear()
-        for (intake in waterIntakes) {
-            val record = WaterRecord(
-                time = intake.time,
-                amount = intake.amount.toString()  // Convert amount (Int) to String
-            )
-            waterRecords.add(record)
-        }
+        fetchWaterIntake()
 
         // RecyclerView setup
         val recyclerView = findViewById<RecyclerView>(R.id.recordsRecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
         val adapter = WaterRecordAdapter(waterRecords)
         recyclerView.adapter = adapter
-
 
         val switchCupButton = findViewById<ImageButton>(R.id.switchcup)
         switchCupButton.setOnClickListener {
@@ -79,11 +70,13 @@ class HomeActivity : AppCompatActivity() {
         val nextSipTextView = findViewById<TextView>(R.id.NextSip)
         startNextSipCountdown(nextSipTextView)
 
-        // Compose view for the WeekBar (user progress)
         val weekBarComposeView = findViewById<ComposeView>(R.id.WeekBar)
         weekBarComposeView.setContent {
-            val userProgress = arrayOf(100, 100, 100, 50, 0, 0, 0)
-            WeekBar(userProgress = userProgress)
+            // Fetch the progress for the last 7 days
+            val progressForLast7Days = calculateWaterIntakeProgress(dbHelper)
+
+            // Pass the progress to the WeekBar composable
+            WeekBar(userProgress = progressForLast7Days) // Ensure that userProgress is passed here
         }
 
         // Compose view for the CircularProgressWithCap (water intake progress)
@@ -92,6 +85,7 @@ class HomeActivity : AppCompatActivity() {
             CircularProgressWithCap(
                 goalAmount = 2150,
                 selectedCupSize = selectedCupSize.value,  // Pass the selected cup size here
+                currentIntake = currentIntake.value, // Pass current intake here
                 onWaterIntake = { record ->
                     waterRecords.add(0, record)
                     updateRecyclerView()
@@ -99,12 +93,34 @@ class HomeActivity : AppCompatActivity() {
                     logWaterIntake(record)
                     // Update streak and goal percentage
                     updateStreakAndGoalPercentage()
+
+                    // Update the current intake when water is added
+                    currentIntake.value += selectedCupSize.value
                 }
             )
         }
 
         // Update streak and goal percentage initially
         updateStreakAndGoalPercentage()
+    }
+
+    // Function to fetch water intake records
+    private fun fetchWaterIntake() {
+        val waterIntakes = dbHelper.getWaterIntakeHistory(userId, getCurrentDate())
+        var totalToday = 0
+        waterRecords.clear()
+
+        // Sum the intake for today and add records to the list
+        for (intake in waterIntakes) {
+            val record = WaterRecord(
+                time = intake.time,
+                amount = intake.amount.toString()
+            )
+            waterRecords.add(record)
+            totalToday += intake.amount // Add the amount to the total for the day
+        }
+
+        currentIntake.value = totalToday // Set the current intake for the day
     }
 
     private fun updateStreakAndGoalPercentage() {
@@ -115,12 +131,11 @@ class HomeActivity : AppCompatActivity() {
         streakTextView.text = "$streak"
 
         // Calculate the goal percentage based on the user's intake for the current day
-        val totalIntakeToday = waterRecords.sumOf { it.amount.toInt() } // Sum of today's water intake
         val dailyGoal = 2150  // Goal amount per day (in ml)
 
         // If the user hasn't met the goal yet, calculate the percentage
-        val goalPercentage = if (totalIntakeToday > 0) {
-            val percentage = (totalIntakeToday.toFloat() / dailyGoal) * 100
+        val goalPercentage = if (currentIntake.value > 0) {
+            val percentage = (currentIntake.value.toFloat() / dailyGoal) * 100
             percentage.coerceIn(0f, 100f)  // Ensure it stays between 0% and 100%
         } else {
             0f  // If no intake, set percentage to 0
@@ -133,17 +148,39 @@ class HomeActivity : AppCompatActivity() {
     private fun calculateStreak(): Int {
         val waterIntakes = dbHelper.getWaterIntakeHistory(userId, getCurrentDate())
         var streak = 0
-        var isStreakActive = true
 
         // Loop through water intakes to check streak
         for (intake in waterIntakes) {
             if (intake.amount >= 2150) {
                 streak++
-            } else {
-                isStreakActive = false
             }
         }
         return streak
+    }
+
+    // Function to calculate water intake progress for the last 7 days
+    private fun calculateWaterIntakeProgress(dbHelper: AquaBuddyDatabaseHelper): Array<Int> {
+        val progressForLast7Days = Array(7) { 0 }
+
+        // Get water intake history for the last 7 days
+        for (i in 0 until 7) {
+            // Get the date for each day in the last 7 days
+            val date = LocalDate.now().minusDays(i.toLong()).toString()
+
+            // Get water intake data for the given date
+            val waterIntakes = dbHelper.getWaterIntakeHistory(userId, date) // Use actual userId
+
+            // Calculate total intake for the day
+            val totalIntakeForDay = waterIntakes.sumOf { it.amount }
+
+            // Calculate progress based on the total intake (assumed daily goal is 2150 ml)
+            val progress = (totalIntakeForDay.toFloat() / 2150) * 100
+
+            // Store the progress for the day (we assume 100% is the goal)
+            progressForLast7Days[i] = progress.toInt()
+        }
+
+        return progressForLast7Days
     }
 
     private fun setupBottomNavigation() {
