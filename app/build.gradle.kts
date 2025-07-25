@@ -76,4 +76,5 @@ dependencies {
     implementation ("androidx.compose.runtime:runtime:1.1.0")
     implementation ("com.google.android.gms:play-services-auth:20.7.0")
     implementation ("com.facebook.android:facebook-login:latest.release")
+    implementation ("androidx.core:core-ktx:1.16.0")
 }
