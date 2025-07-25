@@ -221,6 +221,33 @@ class AnalyticsActivity : AppCompatActivity() {
         return result
     }
 
+    // Add this method to get individual intake records for frequency calculation
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun getWeeklyIntakeFrequency(): Double {
+        return try {
+            val now = LocalDate.now()
+            val weekAgo = now.minusDays(6)
+
+            // Get individual intake records for the last 7 days, not daily summaries
+            val weeklyIntakeRecords = dbHelper.getIntakeRecordsBetweenDates(
+                currentUserId,
+                weekAgo.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
+                now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+            )
+
+            // Calculate average intake sessions per day
+            if (weeklyIntakeRecords.isNotEmpty()) {
+                weeklyIntakeRecords.size / 7.0
+            } else {
+                0.0
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            0.0
+        }
+    }
+
+    // Modified updateWaterReport method
     @RequiresApi(Build.VERSION_CODES.O)
     private fun updateWaterReport() {
         Thread {
@@ -264,9 +291,8 @@ class AnalyticsActivity : AppCompatActivity() {
                     (weeklyEntries.count { (it.amount?.toDouble() ?: 0.0) >= dailyGoal } / 7.0) * 100
                 } else 0.0
 
-                val frequency = if (weeklyEntries.isNotEmpty()) {
-                    weeklyEntries.size / 7.0
-                } else 0.0
+                // FIXED: Get actual intake frequency instead of daily summary count
+                val frequency = getWeeklyIntakeFrequency()
 
                 runOnUiThread {
                     updateTextViewsInAllLayouts(weeklyAvg, monthlyAvg, completionRate, frequency)

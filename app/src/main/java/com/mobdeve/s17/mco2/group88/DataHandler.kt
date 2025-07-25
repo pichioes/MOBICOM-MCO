@@ -279,6 +279,38 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         return total
     }
 
+    // Method for Drink Frequency in Analytics Water Report
+    fun getIntakeRecordsBetweenDates(userId: Long, startDate: String, endDate: String): List<WaterIntake> {
+        val intakeRecords = mutableListOf<WaterIntake>()
+        val db = this.readableDatabase
+
+        val query = """
+        SELECT * FROM $TABLE_WATER_INTAKE 
+        WHERE $COLUMN_INTAKE_USER_ID = ? 
+        AND $COLUMN_INTAKE_DATE BETWEEN ? AND ?
+        ORDER BY $COLUMN_INTAKE_DATE ASC, $COLUMN_INTAKE_TIME ASC
+    """.trimIndent()
+
+        val cursor = db.rawQuery(query, arrayOf(userId.toString(), startDate, endDate))
+
+        if (cursor.moveToFirst()) {
+            do {
+                val intake = WaterIntake(
+                    id = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_INTAKE_ID)),
+                    userId = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_INTAKE_USER_ID)),
+                    amount = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_INTAKE_AMOUNT)),
+                    date = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_INTAKE_DATE)),
+                    time = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_INTAKE_TIME)),
+                    createdAt = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_INTAKE_CREATED_AT))
+                )
+                intakeRecords.add(intake)
+            } while (cursor.moveToNext())
+        }
+
+        cursor.close()
+        return intakeRecords
+    }
+
     fun getWaterIntakeHistory(userId: Long, date: String): List<WaterIntake> {
         val db = this.readableDatabase
         val intakeList = mutableListOf<WaterIntake>()
