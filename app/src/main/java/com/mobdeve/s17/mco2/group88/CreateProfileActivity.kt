@@ -137,15 +137,15 @@ class CreateProfileActivity : AppCompatActivity() {
             dialog.dismiss()
 
             // Show a welcome message
-            Toast.makeText(this, "Welcome, $name!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Please login your account, $name!", Toast.LENGTH_SHORT).show()
 
             // After profile update, navigate to HomeActivity
-            navigateToHome()
+            navigateToLogin()
         }
     }
 
-    private fun navigateToHome() {
-        val intent = Intent(this, HomeActivity::class.java)
+    private fun navigateToLogin() {
+        val intent = Intent(this, LoginActivity::class.java)
         startActivity(intent)
         finish()  // Close this activity
     }
