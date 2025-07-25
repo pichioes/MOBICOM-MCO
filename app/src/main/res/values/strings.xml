@@ -6,4 +6,12 @@
         <item>Every 3 hours</item>
         <item>Every 4 hours</item>
     </string-array>
+
+    <string name="app_name">AquaBuddy</string>
+    <string name="facebook_app_id">1406704927271942</string>
+    <string name="facebook_client_token">8d560e4026cba6a403faf9c63c206d62</string>
+    <string name="fb_login_protocol_scheme">fb1406704927271942</string>
+    <string name="facebook_login_error">Facebook login failed. Please try again.</string>
+    <string name="login_cancelled">Login was cancelled</string>
 </resources>
+

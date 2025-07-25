@@ -1,3 +1,5 @@
+// Updated LoginActivity.kt - Facebook Login fixes
+
 package com.mobdeve.s17.mco2.group88
 
 import android.content.Context
@@ -17,12 +19,21 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
+import com.facebook.AccessToken
+import com.facebook.CallbackManager
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
+import com.facebook.GraphRequest
+import com.facebook.login.LoginManager
+import com.facebook.login.LoginResult
+import org.json.JSONException
 
 class LoginActivity : AppCompatActivity() {
     private var isPasswordVisible = false
     private lateinit var dbHelper: AquaBuddyDatabaseHelper
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var googleSignInClient: GoogleSignInClient
+    private lateinit var callbackManager: CallbackManager
 
     // UI elements
     private lateinit var emailInput: EditText
@@ -30,6 +41,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var loginButton: Button
     private lateinit var passwordToggle: ImageButton
     private lateinit var googleSignInButton: ImageButton
+    private lateinit var facebookSignInButton: ImageButton
 
     companion object {
         const val PREF_NAME = "AquaBuddyPrefs"
@@ -39,12 +51,16 @@ class LoginActivity : AppCompatActivity() {
         const val KEY_LOGIN_TYPE = "login_type"
         const val LOGIN_TYPE_EMAIL = "email"
         const val LOGIN_TYPE_GOOGLE = "google"
+        const val LOGIN_TYPE_FACEBOOK = "facebook"
         private const val RC_SIGN_IN = 9001
         private const val TAG = "LoginActivity"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize Facebook SDK callback manager
+        callbackManager = CallbackManager.Factory.create()
 
         // Initialize database helper and shared preferences
         dbHelper = AquaBuddyDatabaseHelper(this)
@@ -66,6 +82,7 @@ class LoginActivity : AppCompatActivity() {
         setContentView(R.layout.login_signin)
         initializeViews()
         setupClickListeners()
+        setupFacebookLogin()
     }
 
     private fun configureGoogleSignIn() {
@@ -82,7 +99,8 @@ class LoginActivity : AppCompatActivity() {
         passwordInput = findViewById(R.id.passwordInput)
         loginButton = findViewById(R.id.loginButton)
         passwordToggle = findViewById(R.id.passwordToggle)
-        googleSignInButton = findViewById(R.id.googleBtn) // Google button
+        googleSignInButton = findViewById(R.id.googleBtn)
+        facebookSignInButton = findViewById(R.id.facebookBtn)
 
         val forgotPasswordText: TextView = findViewById(R.id.textForgotPassword)
         val signUpText: TextView = findViewById(R.id.textSignUpHere)
@@ -113,6 +131,100 @@ class LoginActivity : AppCompatActivity() {
         googleSignInButton.setOnClickListener {
             signInWithGoogle()
         }
+
+        // Facebook Sign-In button click
+        facebookSignInButton.setOnClickListener {
+            signInWithFacebook()
+        }
+    }
+
+    private fun setupFacebookLogin() {
+        // Register callback with LoginManager
+        LoginManager.getInstance().registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
+            override fun onSuccess(loginResult: LoginResult) {
+                Log.d(TAG, "Facebook login successful")
+                handleFacebookAccessToken(loginResult.accessToken)
+            }
+
+            override fun onCancel() {
+                Log.d(TAG, "Facebook login cancelled")
+                showLoginError("Facebook login was cancelled")
+            }
+
+            override fun onError(exception: FacebookException) {
+                Log.e(TAG, "Facebook login error", exception)
+                showLoginError("Facebook login failed: ${exception.message}")
+            }
+        })
+    }
+
+    private fun signInWithFacebook() {
+        // Use only public_profile permission
+        LoginManager.getInstance().logInWithReadPermissions(this, listOf("public_profile"))
+    }
+
+    private fun handleFacebookAccessToken(token: AccessToken) {
+        Log.d(TAG, "handleFacebookAccessToken: $token")
+
+        val request = GraphRequest.newMeRequest(token) { jsonObject, response ->
+            try {
+                val name = jsonObject?.getString("name") ?: ""
+                val facebookId = jsonObject?.getString("id") ?: ""
+
+                val email = if (jsonObject?.has("email") == true) {
+                    jsonObject.getString("email")
+                } else {
+                    // fallback
+                    "$facebookId@facebook.com"
+                }
+
+                if (name.isNotEmpty() && facebookId.isNotEmpty()) {
+                    handleFacebookSignInSuccess(name, email, facebookId)
+                } else {
+                    showLoginError("Unable to get required information from Facebook")
+                }
+            } catch (e: JSONException) {
+                Log.e(TAG, "Error parsing Facebook response", e)
+                showLoginError("Error processing Facebook login")
+            }
+        }
+
+        val parameters = Bundle()
+        // Only request fields that are definitely available
+        parameters.putString("fields", "id,name")
+        request.parameters = parameters
+        request.executeAsync()
+    }
+
+    private fun handleFacebookSignInSuccess(name: String, email: String, facebookId: String) {
+        Thread {
+            try {
+                var user = dbHelper.getUserByEmail(email)
+
+                if (user == null) {
+                    // Create new user with Facebook account info
+                    val userId = dbHelper.createFacebookUser(name, email, facebookId)
+                    if (userId != -1L) {
+                        user = dbHelper.getUserById(userId)
+                    }
+                }
+
+                runOnUiThread {
+                    if (user != null) {
+                        saveUserSession(user.id, user.email, LOGIN_TYPE_FACEBOOK)
+                        Toast.makeText(this, "Welcome, ${user.name}!", Toast.LENGTH_SHORT).show()
+                        navigateToHome()
+                    } else {
+                        showLoginError("Failed to create user account. Please try again.")
+                    }
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    showLoginError("An error occurred during Facebook Sign-In. Please try again.")
+                    e.printStackTrace()
+                }
+            }
+        }.start()
     }
 
     private fun signInWithGoogle() {
@@ -121,6 +233,8 @@ class LoginActivity : AppCompatActivity() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        // Pass the activity result back to the Facebook SDK
+        callbackManager.onActivityResult(requestCode, resultCode, data)
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == RC_SIGN_IN) {
@@ -132,13 +246,10 @@ class LoginActivity : AppCompatActivity() {
     private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
         try {
             val account = completedTask.getResult(ApiException::class.java)
-
-            // Signed in successfully, show authenticated UI
             account?.let { googleAccount ->
                 handleGoogleSignInSuccess(googleAccount)
             }
         } catch (e: ApiException) {
-            // The ApiException status code indicates the detailed failure reason
             Log.w(TAG, "signInResult:failed code=" + e.statusCode)
             showLoginError("Google Sign-In failed. Please try again.")
         }
@@ -149,16 +260,13 @@ class LoginActivity : AppCompatActivity() {
         val name = account.displayName ?: ""
         val googleId = account.id ?: ""
 
-        // Check if user exists in database, if not create new user
         Thread {
             try {
                 var user = dbHelper.getUserByEmail(email)
 
                 if (user == null) {
-                    // Create new user with Google account info
                     val userId = dbHelper.createGoogleUser(name, email, googleId)
                     if (userId != -1L) {
-                        // Get the user from database after creation (this will have all required fields)
                         user = dbHelper.getUserById(userId)
                     }
                 }
@@ -198,25 +306,19 @@ class LoginActivity : AppCompatActivity() {
         val email = emailInput.text.toString().trim()
         val password = passwordInput.text.toString().trim()
 
-        // Validate input
         if (!validateInput(email, password)) {
             return
         }
 
-        // Perform authentication in background thread
         Thread {
             try {
-                // Simulate network delay (optional - remove in production)
                 Thread.sleep(500)
-
                 val authenticatedUser = dbHelper.authenticateUser(email, password)
 
                 runOnUiThread {
                     if (authenticatedUser != null) {
-                        // Login successful
                         handleLoginSuccess(authenticatedUser)
                     } else {
-                        // Login failed
                         handleLoginFailure()
                     }
                 }
@@ -232,7 +334,6 @@ class LoginActivity : AppCompatActivity() {
     private fun validateInput(email: String, password: String): Boolean {
         var isValid = true
 
-        // Validate email
         if (email.isEmpty()) {
             emailInput.error = "Email is required"
             isValid = false
@@ -243,7 +344,6 @@ class LoginActivity : AppCompatActivity() {
             emailInput.error = null
         }
 
-        // Validate password
         if (password.isEmpty()) {
             passwordInput.error = "Password is required"
             isValid = false
@@ -255,20 +355,13 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun handleLoginSuccess(user: User) {
-        // Save user session
         saveUserSession(user.id, user.email, LOGIN_TYPE_EMAIL)
-
-        // Show success message
         Toast.makeText(this, "Welcome back, ${user.name}!", Toast.LENGTH_SHORT).show()
-
-        // Navigate to home
         navigateToHome()
     }
 
     private fun handleLoginFailure() {
         showLoginError("Invalid email or password. Please check your credentials.")
-
-        // Clear password field for security
         passwordInput.setText("")
     }
 
@@ -302,22 +395,26 @@ class LoginActivity : AppCompatActivity() {
         dbHelper.close()
     }
 
-    // Utility function to get current user ID (use this in other activities)
     fun getCurrentUserId(): Long {
         return sharedPreferences.getLong(KEY_USER_ID, -1L)
     }
 
-    // Updated logout function to handle Google Sign-Out
     fun logout() {
         val loginType = sharedPreferences.getString(KEY_LOGIN_TYPE, LOGIN_TYPE_EMAIL)
 
-        if (loginType == LOGIN_TYPE_GOOGLE) {
-            googleSignInClient.signOut().addOnCompleteListener(this) {
-                // Clear shared preferences after Google sign out
+        when (loginType) {
+            LOGIN_TYPE_GOOGLE -> {
+                googleSignInClient.signOut().addOnCompleteListener(this) {
+                    clearUserSession()
+                }
+            }
+            LOGIN_TYPE_FACEBOOK -> {
+                LoginManager.getInstance().logOut()
                 clearUserSession()
             }
-        } else {
-            clearUserSession()
+            else -> {
+                clearUserSession()
+            }
         }
     }
 
