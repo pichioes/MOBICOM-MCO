@@ -22,7 +22,8 @@ data class User(
     val dailyWaterGoal: Int, // in ml
     val notificationFrequency: Int, // in minutes
     val createdAt: String = getCurrentDateTime(),
-    val updatedAt: String = getCurrentDateTime()
+    val updatedAt: String = getCurrentDateTime(),
+    val googleId: String? = null // for google
 )
 
 data class WaterIntake(
@@ -72,7 +73,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
 
     companion object {
         private const val DATABASE_NAME = "AquaBuddy.db"
-        private const val DATABASE_VERSION = 2 // Increment version for schema change
+        private const val DATABASE_VERSION = 3 // Increment version for schema change
 
         // Users table
         private const val TABLE_USERS = "users"
@@ -88,6 +89,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         private const val COLUMN_USER_NOTIFICATION_FREQ = "notification_frequency"
         private const val COLUMN_USER_CREATED_AT = "created_at"
         private const val COLUMN_USER_UPDATED_AT = "updated_at"
+        private const val COLUMN_USER_GOOGLE_ID = "google_id"
 
         // Water intake table
         private const val TABLE_WATER_INTAKE = "water_intake"
@@ -114,7 +116,8 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
                 $COLUMN_USER_DAILY_GOAL INTEGER NOT NULL,
                 $COLUMN_USER_NOTIFICATION_FREQ INTEGER DEFAULT 60,
                 $COLUMN_USER_CREATED_AT TEXT NOT NULL,
-                $COLUMN_USER_UPDATED_AT TEXT NOT NULL
+                $COLUMN_USER_UPDATED_AT TEXT NOT NULL,
+                $COLUMN_USER_GOOGLE_ID TEXT
             )
         """.trimIndent()
 
@@ -144,6 +147,10 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
             // Add password column to existing users table
             db.execSQL("ALTER TABLE $TABLE_USERS ADD COLUMN $COLUMN_USER_PASSWORD_HASH TEXT DEFAULT ''")
         }
+        if (oldVersion < 3) {
+            // Add google_id column
+            db.execSQL("ALTER TABLE $TABLE_USERS ADD COLUMN $COLUMN_USER_GOOGLE_ID TEXT")
+        }
     }
 
     // User management functions
@@ -161,6 +168,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
             put(COLUMN_USER_NOTIFICATION_FREQ, user.notificationFrequency)
             put(COLUMN_USER_CREATED_AT, user.createdAt)
             put(COLUMN_USER_UPDATED_AT, user.updatedAt)
+            put(COLUMN_USER_GOOGLE_ID, user.googleId)
         }
         return db.insert(TABLE_USERS, null, values)
     }
@@ -185,6 +193,32 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
             cursor.close()
             null
         }
+    }
+
+    // Create Google Users
+    fun createGoogleUser(name: String, email: String, googleId: String): Long {
+        // Validate input first
+        if (name.isBlank() || email.isBlank() || googleId.isBlank()) {
+            return -1L
+        }
+
+        val db = this.writableDatabase
+        val values = ContentValues().apply {
+            put(COLUMN_USER_NAME, name)
+            put(COLUMN_USER_EMAIL, email)
+            put(COLUMN_USER_PASSWORD_HASH, "") // Empty for Google users
+            put(COLUMN_USER_AGE, 0) // Use 0 to indicate not set
+            put(COLUMN_USER_WEIGHT, 0.0)
+            put(COLUMN_USER_HEIGHT, 0.0)
+            put(COLUMN_USER_SEX, "not_specified")
+            put(COLUMN_USER_DAILY_GOAL, 2150) // Reasonable default
+            put(COLUMN_USER_NOTIFICATION_FREQ, 60)
+            put(COLUMN_USER_CREATED_AT, getCurrentDateTime())
+            put(COLUMN_USER_UPDATED_AT, getCurrentDateTime())
+            put(COLUMN_USER_GOOGLE_ID, googleId)
+        }
+
+        return db.insert(TABLE_USERS, null, values)
     }
 
     // New function for authentication
@@ -384,7 +418,8 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
             dailyWaterGoal = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_USER_DAILY_GOAL)),
             notificationFrequency = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_USER_NOTIFICATION_FREQ)),
             createdAt = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_CREATED_AT)),
-            updatedAt = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_UPDATED_AT))
+            updatedAt = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_UPDATED_AT)),
+            googleId = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_GOOGLE_ID))
         )
     }
 

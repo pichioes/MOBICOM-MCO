@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("org.jetbrains.kotlin.kapt")
+    id("com.google.gms.google-services") version "4.4.2" apply false
 }
 
 android {
@@ -73,4 +74,5 @@ dependencies {
     implementation ("androidx.compose.ui:ui:1.1.0")
     implementation ("androidx.compose.material3:material3:1.0.0")
     implementation ("androidx.compose.runtime:runtime:1.1.0")
+    implementation ("com.google.android.gms:play-services-auth:20.7.0")
 }

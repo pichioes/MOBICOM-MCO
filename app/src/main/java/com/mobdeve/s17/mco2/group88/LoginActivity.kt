@@ -5,28 +5,42 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.method.PasswordTransformationMethod
+import android.util.Log
 import android.util.Patterns
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.tasks.Task
 
 class LoginActivity : AppCompatActivity() {
     private var isPasswordVisible = false
     private lateinit var dbHelper: AquaBuddyDatabaseHelper
     private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var googleSignInClient: GoogleSignInClient
 
     // UI elements
     private lateinit var emailInput: EditText
     private lateinit var passwordInput: EditText
     private lateinit var loginButton: Button
     private lateinit var passwordToggle: ImageButton
+    private lateinit var googleSignInButton: ImageButton
 
     companion object {
         const val PREF_NAME = "AquaBuddyPrefs"
         const val KEY_USER_ID = "user_id"
         const val KEY_USER_EMAIL = "user_email"
         const val KEY_IS_LOGGED_IN = "is_logged_in"
+        const val KEY_LOGIN_TYPE = "login_type"
+        const val LOGIN_TYPE_EMAIL = "email"
+        const val LOGIN_TYPE_GOOGLE = "google"
+        private const val RC_SIGN_IN = 9001
+        private const val TAG = "LoginActivity"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,6 +49,9 @@ class LoginActivity : AppCompatActivity() {
         // Initialize database helper and shared preferences
         dbHelper = AquaBuddyDatabaseHelper(this)
         sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+
+        // Configure Google Sign-In
+        configureGoogleSignIn()
 
         // Check if user is already logged in
         if (isUserLoggedIn()) {
@@ -51,11 +68,21 @@ class LoginActivity : AppCompatActivity() {
         setupClickListeners()
     }
 
+    private fun configureGoogleSignIn() {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestEmail()
+            .requestProfile()
+            .build()
+
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
+    }
+
     private fun initializeViews() {
         emailInput = findViewById(R.id.emailInput)
         passwordInput = findViewById(R.id.passwordInput)
         loginButton = findViewById(R.id.loginButton)
         passwordToggle = findViewById(R.id.passwordToggle)
+        googleSignInButton = findViewById(R.id.imageButton1) // Google button
 
         val forgotPasswordText: TextView = findViewById(R.id.textForgotPassword)
         val signUpText: TextView = findViewById(R.id.textSignUpHere)
@@ -81,6 +108,77 @@ class LoginActivity : AppCompatActivity() {
         loginButton.setOnClickListener {
             attemptLogin()
         }
+
+        // Google Sign-In button click
+        googleSignInButton.setOnClickListener {
+            signInWithGoogle()
+        }
+    }
+
+    private fun signInWithGoogle() {
+        val signInIntent = googleSignInClient.signInIntent
+        startActivityForResult(signInIntent, RC_SIGN_IN)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == RC_SIGN_IN) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+            handleSignInResult(task)
+        }
+    }
+
+    private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
+        try {
+            val account = completedTask.getResult(ApiException::class.java)
+
+            // Signed in successfully, show authenticated UI
+            account?.let { googleAccount ->
+                handleGoogleSignInSuccess(googleAccount)
+            }
+        } catch (e: ApiException) {
+            // The ApiException status code indicates the detailed failure reason
+            Log.w(TAG, "signInResult:failed code=" + e.statusCode)
+            showLoginError("Google Sign-In failed. Please try again.")
+        }
+    }
+
+    private fun handleGoogleSignInSuccess(account: GoogleSignInAccount) {
+        val email = account.email ?: ""
+        val name = account.displayName ?: ""
+        val googleId = account.id ?: ""
+
+        // Check if user exists in database, if not create new user
+        Thread {
+            try {
+                var user = dbHelper.getUserByEmail(email)
+
+                if (user == null) {
+                    // Create new user with Google account info
+                    val userId = dbHelper.createGoogleUser(name, email, googleId)
+                    if (userId != -1L) {
+                        // Get the user from database after creation (this will have all required fields)
+                        user = dbHelper.getUserById(userId)
+                    }
+                }
+
+                runOnUiThread {
+                    if (user != null) {
+                        saveUserSession(user.id, user.email, LOGIN_TYPE_GOOGLE)
+                        Toast.makeText(this, "Welcome, ${user.name}!", Toast.LENGTH_SHORT).show()
+                        navigateToHome()
+                    } else {
+                        showLoginError("Failed to create user account. Please try again.")
+                    }
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    showLoginError("An error occurred during Google Sign-In. Please try again.")
+                    e.printStackTrace()
+                }
+            }
+        }.start()
     }
 
     private fun togglePasswordVisibility() {
@@ -158,7 +256,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun handleLoginSuccess(user: User) {
         // Save user session
-        saveUserSession(user.id, user.email)
+        saveUserSession(user.id, user.email, LOGIN_TYPE_EMAIL)
 
         // Show success message
         Toast.makeText(this, "Welcome back, ${user.name}!", Toast.LENGTH_SHORT).show()
@@ -174,11 +272,12 @@ class LoginActivity : AppCompatActivity() {
         passwordInput.setText("")
     }
 
-    private fun saveUserSession(userId: Long, email: String) {
+    private fun saveUserSession(userId: Long, email: String, loginType: String = LOGIN_TYPE_EMAIL) {
         sharedPreferences.edit().apply {
             putLong(KEY_USER_ID, userId)
             putString(KEY_USER_EMAIL, email)
             putBoolean(KEY_IS_LOGGED_IN, true)
+            putString(KEY_LOGIN_TYPE, loginType)
             apply()
         }
     }
@@ -208,8 +307,21 @@ class LoginActivity : AppCompatActivity() {
         return sharedPreferences.getLong(KEY_USER_ID, -1L)
     }
 
-    // Utility function to logout user
+    // Updated logout function to handle Google Sign-Out
     fun logout() {
+        val loginType = sharedPreferences.getString(KEY_LOGIN_TYPE, LOGIN_TYPE_EMAIL)
+
+        if (loginType == LOGIN_TYPE_GOOGLE) {
+            googleSignInClient.signOut().addOnCompleteListener(this) {
+                // Clear shared preferences after Google sign out
+                clearUserSession()
+            }
+        } else {
+            clearUserSession()
+        }
+    }
+
+    private fun clearUserSession() {
         sharedPreferences.edit().apply {
             clear()
             apply()
