@@ -1,11 +1,14 @@
 package com.mobdeve.s17.mco2.group88
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.res.ColorStateList
 import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.platform.ComposeView
@@ -19,6 +22,10 @@ import java.util.*
 
 class AnalyticsActivity : AppCompatActivity() {
 
+    private lateinit var dbHelper: AquaBuddyDatabaseHelper
+    private lateinit var sharedPreferences: SharedPreferences
+    private var currentUserId: Long = -1L
+
     private val waterRecords = mutableListOf<WaterRecord>()
     private var selectedDateString: String? = null
     private var currentDisplayedMonth: Int = LocalDate.now().monthValue
@@ -29,8 +36,17 @@ class AnalyticsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_analytics)
 
-        // Get real data from HomeActivity instead of generating sample data
-        loadWaterRecordsFromIntent()
+        // Initialize database helper and shared preferences
+        initializeDatabase()
+
+        // Check if user is logged in and get user ID
+        if (!checkUserSession()) {
+            redirectToLogin()
+            return
+        }
+
+        // Load water records from database
+        loadWaterRecordsFromDatabase()
 
         setupCalendarView()
         updateWaterReport()
@@ -38,21 +54,68 @@ class AnalyticsActivity : AppCompatActivity() {
         setupBottomNavigation()
     }
 
-    private fun loadWaterRecordsFromIntent() {
-        // Get the water records passed from HomeActivity
-        val recordStrings = intent.getStringArrayListExtra("waterRecords")
-        if (recordStrings != null) {
-            waterRecords.clear()
-            for (recordString in recordStrings) {
-                val parts = recordString.split("|")
-                if (parts.size == 2) {
-                    waterRecords.add(WaterRecord(parts[0], parts[1]))
+    private fun initializeDatabase() {
+        dbHelper = AquaBuddyDatabaseHelper(this)
+        sharedPreferences = getSharedPreferences(LoginActivity.PREF_NAME, Context.MODE_PRIVATE)
+    }
+
+    private fun checkUserSession(): Boolean {
+        val isLoggedIn = sharedPreferences.getBoolean(LoginActivity.KEY_IS_LOGGED_IN, false)
+        currentUserId = sharedPreferences.getLong(LoginActivity.KEY_USER_ID, -1L)
+
+        return isLoggedIn && currentUserId != -1L
+    }
+
+    private fun redirectToLogin() {
+        Toast.makeText(this, "Please log in to view analytics", Toast.LENGTH_SHORT).show()
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun loadWaterRecordsFromDatabase() {
+        Thread {
+            try {
+                // Get last 30 days summary from database
+                val dailySummaries = dbHelper.getLast30DaysSummary(currentUserId)
+
+                // Convert DailyIntakeSummary to WaterRecord format
+                val records = dailySummaries.map { summary ->
+                    WaterRecord(summary.date, summary.totalIntake.toString())
+                }
+
+                runOnUiThread {
+                    waterRecords.clear()
+                    waterRecords.addAll(records)
+
+                    // Refresh UI components after loading data
+                    refreshUIWithNewData()
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    Toast.makeText(this@AnalyticsActivity,
+                        "Error loading water intake data", Toast.LENGTH_SHORT).show()
+                    e.printStackTrace()
                 }
             }
-        }
+        }.start()
+    }
 
-        // If no records were passed, you can still add some default/empty state
-        // but don't add random sample data
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun refreshUIWithNewData() {
+        // Update calendar decorators
+        val calendarView = findViewById<MaterialCalendarView>(R.id.calendarView)
+        calendarView.removeDecorators()
+        val waterProgressDecorator = WaterProgressDecoratorWithDate(this, waterRecords)
+        calendarView.addDecorator(waterProgressDecorator)
+
+        // Update water report with new data
+        updateWaterReport()
+
+        // Update calendar progress
+        setupCalendarProgress()
     }
 
     private fun setupBottomNavigation() {
@@ -160,46 +223,62 @@ class AnalyticsActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun updateWaterReport() {
-        val now = LocalDate.now()
-        val weekAgo = now.minusDays(6)
-        val monthAgo = now.withDayOfMonth(1)
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-
-        val weeklyEntries = waterRecords.filter {
+        Thread {
             try {
-                val date = LocalDate.parse(it.time, formatter)
-                date in weekAgo..now
+                val now = LocalDate.now()
+                val weekAgo = now.minusDays(6)
+                val monthAgo = now.withDayOfMonth(1)
+                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
+                val weeklyEntries = waterRecords.filter {
+                    try {
+                        val date = LocalDate.parse(it.time, formatter)
+                        date in weekAgo..now
+                    } catch (e: Exception) {
+                        false
+                    }
+                }
+
+                val monthlyEntries = waterRecords.filter {
+                    try {
+                        val date = LocalDate.parse(it.time, formatter)
+                        date >= monthAgo
+                    } catch (e: Exception) {
+                        false
+                    }
+                }
+
+                // Get user's daily goal from database
+                val user = dbHelper.getUserById(currentUserId)
+                val dailyGoal = user?.dailyWaterGoal?.toDouble() ?: 2000.0
+
+                val weeklyAvg = if (weeklyEntries.isNotEmpty()) {
+                    weeklyEntries.sumOf { it.amount?.toDouble() ?: 0.0 } / 7
+                } else 0.0
+
+                val monthlyAvg = if (monthlyEntries.isNotEmpty()) {
+                    monthlyEntries.sumOf { it.amount?.toDouble() ?: 0.0 } / now.lengthOfMonth()
+                } else 0.0
+
+                val completionRate = if (weeklyEntries.isNotEmpty()) {
+                    (weeklyEntries.count { (it.amount?.toDouble() ?: 0.0) >= dailyGoal } / 7.0) * 100
+                } else 0.0
+
+                val frequency = if (weeklyEntries.isNotEmpty()) {
+                    weeklyEntries.size / 7.0
+                } else 0.0
+
+                runOnUiThread {
+                    updateTextViewsInAllLayouts(weeklyAvg, monthlyAvg, completionRate, frequency)
+                }
             } catch (e: Exception) {
-                false
+                runOnUiThread {
+                    Toast.makeText(this@AnalyticsActivity,
+                        "Error calculating water report", Toast.LENGTH_SHORT).show()
+                    e.printStackTrace()
+                }
             }
-        }
-
-        val monthlyEntries = waterRecords.filter {
-            try {
-                val date = LocalDate.parse(it.time, formatter)
-                date >= monthAgo
-            } catch (e: Exception) {
-                false
-            }
-        }
-
-        val weeklyAvg = if (weeklyEntries.isNotEmpty()) {
-            weeklyEntries.sumOf { it.amount?.toDouble() ?: 0.0 } / 7
-        } else 0.0
-
-        val monthlyAvg = if (monthlyEntries.isNotEmpty()) {
-            monthlyEntries.sumOf { it.amount?.toDouble() ?: 0.0 } / now.lengthOfMonth()
-        } else 0.0
-
-        val completionRate = if (weeklyEntries.isNotEmpty()) {
-            (weeklyEntries.count { (it.amount?.toFloat() ?: 0f) >= 2000f } / 7.0) * 100
-        } else 0.0
-
-        val frequency = if (weeklyEntries.isNotEmpty()) {
-            weeklyEntries.size / 7.0
-        } else 0.0
-
-        updateTextViewsInAllLayouts(weeklyAvg, monthlyAvg, completionRate, frequency)
+        }.start()
     }
 
     private fun updateTextViewsInAllLayouts(
@@ -246,5 +325,25 @@ class AnalyticsActivity : AppCompatActivity() {
                 selectedDate = dateString
             )
         }
+    }
+
+    // Method to refresh data (call this when returning from other activities)
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun refreshData() {
+        loadWaterRecordsFromDatabase()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onResume() {
+        super.onResume()
+        // Refresh data when returning to this activity
+        if (currentUserId != -1L) {
+            refreshData()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        dbHelper.close()
     }
 }
