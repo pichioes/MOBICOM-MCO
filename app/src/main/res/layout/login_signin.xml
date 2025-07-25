@@ -193,7 +193,7 @@
 
             <!-- Google -->
             <ImageButton
-                android:id="@+id/imageButton1"
+                android:id="@+id/googleBtn"
                 android:layout_width="118dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

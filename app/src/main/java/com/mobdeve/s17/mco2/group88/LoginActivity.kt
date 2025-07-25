@@ -82,7 +82,7 @@ class LoginActivity : AppCompatActivity() {
         passwordInput = findViewById(R.id.passwordInput)
         loginButton = findViewById(R.id.loginButton)
         passwordToggle = findViewById(R.id.passwordToggle)
-        googleSignInButton = findViewById(R.id.imageButton1) // Google button
+        googleSignInButton = findViewById(R.id.googleBtn) // Google button
 
         val forgotPasswordText: TextView = findViewById(R.id.textForgotPassword)
         val signUpText: TextView = findViewById(R.id.textSignUpHere)
