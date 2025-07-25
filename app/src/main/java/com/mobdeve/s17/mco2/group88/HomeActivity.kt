@@ -19,6 +19,9 @@ import java.util.*
 import android.content.Intent
 import androidx.compose.ui.tooling.preview.Preview
 import java.time.LocalDate
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
 
 
 class HomeActivity : AppCompatActivity() {
@@ -32,6 +35,8 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var nextSipTextView: TextView  // Added as class property for easier access
     private var userId: Long = -1
     private var currentIntake = mutableStateOf(0) // This will store the current intake for the day.
+    private lateinit var notificationHelper: NotificationHelper
+    private val NOTIFICATION_PERMISSION_REQUEST_CODE = 1001
 
     // Add mutable state for week progress to make it reactive
     private var weekProgress = mutableStateOf(Array(7) { -1 })
@@ -44,6 +49,8 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.homepage)
 
+        notificationHelper = NotificationHelper(this)
+        requestNotificationPermission()
         dbHelper = AquaBuddyDatabaseHelper(this)
 
         // Get the user ID from SharedPreferences (or wherever it's stored)
@@ -119,6 +126,43 @@ class HomeActivity : AppCompatActivity() {
         updateStreakAndGoalPercentage()
     }
 
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    NOTIFICATION_PERMISSION_REQUEST_CODE
+                )
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            NOTIFICATION_PERMISSION_REQUEST_CODE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(
+                        this,
+                        "Notification permission is required for water reminders",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+    }
+
+
+
     // Function to fetch water intake records
     private fun fetchWaterIntake() {
         val waterIntakes = dbHelper.getWaterIntakeHistory(userId, getCurrentDate())
@@ -161,6 +205,9 @@ class HomeActivity : AppCompatActivity() {
         // Cancel the existing timer if it exists
         timerTask?.cancel()
         timer?.cancel()
+
+        // Cancel any existing notification since user drank water
+        notificationHelper.cancelWaterReminderNotification()
 
         // Start a new timer
         startNextSipCountdown(nextSipTextView)
@@ -417,7 +464,7 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun startNextSipCountdown(nextSipTextView: TextView) {
-        val notificationFrequency = 60  // Replace with the actual notification frequency from the user settings or profile
+        val notificationFrequency = .5  // 30 seconds
 
         // Create a new timer and task
         timer = Timer()
@@ -431,8 +478,12 @@ class HomeActivity : AppCompatActivity() {
 
                 timeLeft--
 
-                if (timeLeft < 0) {
-                    timeLeft = notificationFrequency  // Reset the timer if it's time for the next notification
+                if (timeLeft <= 0) {
+                    // Time's up! Show notification
+                    notificationHelper.showWaterReminderNotification()
+
+                    // Reset the timer
+                    timeLeft = notificationFrequency
                 }
             }
         }
