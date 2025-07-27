@@ -37,6 +37,8 @@
         <activity android:name=".ForgotPasswordActivity" />
         <activity android:name=".SignupActivity" />
         <activity android:name=".CreateProfileActivity"/>
+        <activity android:name=".ResetPasswordActivity"/>
+        <activity android:name=".SecurityQuestionActivity"/>
         <activity android:name=".HomeActivity" />
         <activity android:name=".ProfileMainPage" />
         <activity android:name=".AnalyticsActivity" />

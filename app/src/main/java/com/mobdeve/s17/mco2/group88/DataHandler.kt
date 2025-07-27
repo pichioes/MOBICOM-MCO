@@ -5,11 +5,12 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.util.Log
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.util.*
 
-// Updated User data class with password
+// Updated User data class with security question fields
 data class User(
     val id: Long = 0,
     val name: String,
@@ -21,6 +22,8 @@ data class User(
     val sex: String, // "male" or "female"
     val dailyWaterGoal: Int, // in ml
     val notificationFrequency: Int, // in minutes
+    val securityQuestion: String = "", // Security question
+    val securityAnswerHash: String = "", // Now stores plain text security answer
     val createdAt: String = getCurrentDateTime(),
     val updatedAt: String = getCurrentDateTime(),
     val googleId: String? = null, // for google
@@ -58,7 +61,7 @@ fun getCurrentTime(): String {
     return sdf.format(Date())
 }
 
-// Password hashing utility
+// Password hashing utility (keep this for passwords)
 fun hashPassword(password: String): String {
     val bytes = password.toByteArray()
     val md = MessageDigest.getInstance("SHA-256")
@@ -74,7 +77,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
 
     companion object {
         private const val DATABASE_NAME = "AquaBuddy.db"
-        private const val DATABASE_VERSION = 4 // Increment version for schema change
+        private const val DATABASE_VERSION = 7 // Increment version to force upgrade
 
         // Users table
         private const val TABLE_USERS = "users"
@@ -88,6 +91,8 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         private const val COLUMN_USER_SEX = "sex"
         private const val COLUMN_USER_DAILY_GOAL = "daily_water_goal"
         private const val COLUMN_USER_NOTIFICATION_FREQ = "notification_frequency"
+        private const val COLUMN_USER_SECURITY_QUESTION = "security_question"
+        private const val COLUMN_USER_SECURITY_ANSWER_HASH = "security_answer_hash"
         private const val COLUMN_USER_CREATED_AT = "created_at"
         private const val COLUMN_USER_UPDATED_AT = "updated_at"
         private const val COLUMN_USER_GOOGLE_ID = "google_id"
@@ -104,7 +109,9 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
     }
 
     override fun onCreate(db: SQLiteDatabase) {
-        // Create users table with password field
+        Log.d("DatabaseHelper", "Creating database tables...")
+
+        // Create users table with security question fields
         val createUsersTable = """
             CREATE TABLE $TABLE_USERS (
                 $COLUMN_USER_ID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -117,6 +124,8 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
                 $COLUMN_USER_SEX TEXT NOT NULL,
                 $COLUMN_USER_DAILY_GOAL INTEGER NOT NULL,
                 $COLUMN_USER_NOTIFICATION_FREQ INTEGER DEFAULT 60,
+                $COLUMN_USER_SECURITY_QUESTION TEXT NOT NULL DEFAULT '',
+                $COLUMN_USER_SECURITY_ANSWER_HASH TEXT NOT NULL DEFAULT '',
                 $COLUMN_USER_CREATED_AT TEXT NOT NULL,
                 $COLUMN_USER_UPDATED_AT TEXT NOT NULL,
                 $COLUMN_USER_GOOGLE_ID TEXT,
@@ -137,81 +146,252 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
             )
         """.trimIndent()
 
-        db.execSQL(createUsersTable)
-        db.execSQL(createWaterIntakeTable)
+        try {
+            db.execSQL(createUsersTable)
+            db.execSQL(createWaterIntakeTable)
 
-        // Create indexes for better performance
-        db.execSQL("CREATE INDEX idx_water_intake_user_date ON $TABLE_WATER_INTAKE($COLUMN_INTAKE_USER_ID, $COLUMN_INTAKE_DATE)")
-        db.execSQL("CREATE INDEX idx_users_email ON $TABLE_USERS($COLUMN_USER_EMAIL)")
+            // Create indexes for better performance
+            db.execSQL("CREATE INDEX idx_water_intake_user_date ON $TABLE_WATER_INTAKE($COLUMN_INTAKE_USER_ID, $COLUMN_INTAKE_DATE)")
+            db.execSQL("CREATE INDEX idx_users_email ON $TABLE_USERS($COLUMN_USER_EMAIL)")
+
+            Log.d("DatabaseHelper", "Database tables created successfully")
+        } catch (e: Exception) {
+            Log.e("DatabaseHelper", "Error creating database tables: ${e.message}", e)
+        }
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        Log.d("DatabaseHelper", "Upgrading database from version $oldVersion to $newVersion")
+
         if (oldVersion < 2) {
             // Add password column to existing users table
-            db.execSQL("ALTER TABLE $TABLE_USERS ADD COLUMN $COLUMN_USER_PASSWORD_HASH TEXT DEFAULT ''")
+            try {
+                db.execSQL("ALTER TABLE $TABLE_USERS ADD COLUMN $COLUMN_USER_PASSWORD_HASH TEXT DEFAULT ''")
+                Log.d("DatabaseHelper", "Added password_hash column")
+            } catch (e: Exception) {
+                Log.e("DatabaseHelper", "Error adding password_hash column: ${e.message}", e)
+            }
         }
         if (oldVersion < 3) {
             // Add google_id column
-            db.execSQL("ALTER TABLE $TABLE_USERS ADD COLUMN $COLUMN_USER_GOOGLE_ID TEXT")
+            try {
+                db.execSQL("ALTER TABLE $TABLE_USERS ADD COLUMN $COLUMN_USER_GOOGLE_ID TEXT")
+                Log.d("DatabaseHelper", "Added google_id column")
+            } catch (e: Exception) {
+                Log.e("DatabaseHelper", "Error adding google_id column: ${e.message}", e)
+            }
         }
         if (oldVersion < 4) {
             // Add facebook_id column
-            db.execSQL("ALTER TABLE $TABLE_USERS ADD COLUMN $COLUMN_USER_FACEBOOK_ID TEXT")
+            try {
+                db.execSQL("ALTER TABLE $TABLE_USERS ADD COLUMN $COLUMN_USER_FACEBOOK_ID TEXT")
+                Log.d("DatabaseHelper", "Added facebook_id column")
+            } catch (e: Exception) {
+                Log.e("DatabaseHelper", "Error adding facebook_id column: ${e.message}", e)
+            }
+        }
+        if (oldVersion < 5) {
+            // Add security question and answer columns
+            try {
+                db.execSQL("ALTER TABLE $TABLE_USERS ADD COLUMN $COLUMN_USER_SECURITY_QUESTION TEXT DEFAULT ''")
+                db.execSQL("ALTER TABLE $TABLE_USERS ADD COLUMN $COLUMN_USER_SECURITY_ANSWER_HASH TEXT DEFAULT ''")
+                Log.d("DatabaseHelper", "Added security question and answer columns")
+            } catch (e: Exception) {
+                Log.e("DatabaseHelper", "Error adding security columns: ${e.message}", e)
+            }
+        }
+        if (oldVersion < 6) {
+            // Version 6 - just for better error handling, no schema changes
+            Log.d("DatabaseHelper", "Upgraded to version 6 for improved error handling")
+        }
+        if (oldVersion < 7) {
+            // Ensure security columns exist (safety check)
+            try {
+                // Check if columns exist, if not add them
+                val cursor = db.rawQuery("PRAGMA table_info($TABLE_USERS)", null)
+                val columnNames = mutableSetOf<String>()
+
+                while (cursor.moveToNext()) {
+                    val columnName = cursor.getString(cursor.getColumnIndexOrThrow("name"))
+                    columnNames.add(columnName)
+                }
+                cursor.close()
+
+                if (!columnNames.contains(COLUMN_USER_SECURITY_QUESTION)) {
+                    db.execSQL("ALTER TABLE $TABLE_USERS ADD COLUMN $COLUMN_USER_SECURITY_QUESTION TEXT DEFAULT ''")
+                    Log.d("DatabaseHelper", "Added missing security_question column")
+                }
+
+                if (!columnNames.contains(COLUMN_USER_SECURITY_ANSWER_HASH)) {
+                    db.execSQL("ALTER TABLE $TABLE_USERS ADD COLUMN $COLUMN_USER_SECURITY_ANSWER_HASH TEXT DEFAULT ''")
+                    Log.d("DatabaseHelper", "Added missing security_answer_hash column")
+                }
+
+                Log.d("DatabaseHelper", "Upgraded to version 7 - ensured security columns exist")
+            } catch (e: Exception) {
+                Log.e("DatabaseHelper", "Error in version 7 upgrade: ${e.message}", e)
+            }
         }
     }
-    // User management functions
+
+    // Helper function to check if security columns exist
+    private fun checkSecurityColumnsExist(db: SQLiteDatabase): Boolean {
+        return try {
+            val cursor = db.rawQuery("PRAGMA table_info($TABLE_USERS)", null)
+            val columnNames = mutableSetOf<String>()
+
+            while (cursor.moveToNext()) {
+                val columnName = cursor.getString(cursor.getColumnIndexOrThrow("name"))
+                columnNames.add(columnName)
+            }
+            cursor.close()
+
+            val hasSecurityQuestion = columnNames.contains(COLUMN_USER_SECURITY_QUESTION)
+            val hasSecurityAnswer = columnNames.contains(COLUMN_USER_SECURITY_ANSWER_HASH)
+
+            Log.d("DatabaseHelper", "Security question column exists: $hasSecurityQuestion")
+            Log.d("DatabaseHelper", "Security answer column exists: $hasSecurityAnswer")
+
+            hasSecurityQuestion && hasSecurityAnswer
+        } catch (e: Exception) {
+            Log.e("DatabaseHelper", "Error checking column existence: ${e.message}", e)
+            false
+        }
+    }
+
+    // Enhanced User management functions with better error handling
     fun insertUser(user: User): Long {
         val db = this.writableDatabase
-        val values = ContentValues().apply {
-            put(COLUMN_USER_NAME, user.name)
-            put(COLUMN_USER_EMAIL, user.email)
-            put(COLUMN_USER_PASSWORD_HASH, user.passwordHash)
-            put(COLUMN_USER_AGE, user.age)
-            put(COLUMN_USER_WEIGHT, user.weight)
-            put(COLUMN_USER_HEIGHT, user.height)
-            put(COLUMN_USER_SEX, user.sex)
-            put(COLUMN_USER_DAILY_GOAL, user.dailyWaterGoal)
-            put(COLUMN_USER_NOTIFICATION_FREQ, user.notificationFrequency)
-            put(COLUMN_USER_CREATED_AT, user.createdAt)
-            put(COLUMN_USER_UPDATED_AT, user.updatedAt)
-            put(COLUMN_USER_GOOGLE_ID, user.googleId)
-            put(COLUMN_USER_FACEBOOK_ID, user.facebookId)
+
+        try {
+            // Validate required fields
+            if (user.name.isBlank()) {
+                Log.e("DatabaseHelper", "Cannot insert user: name is blank")
+                return -1L
+            }
+            if (user.email.isBlank()) {
+                Log.e("DatabaseHelper", "Cannot insert user: email is blank")
+                return -1L
+            }
+
+            // Check if security columns exist
+            val securityColumnsExist = checkSecurityColumnsExist(db)
+
+            val values = ContentValues().apply {
+                put(COLUMN_USER_NAME, user.name.trim())
+                put(COLUMN_USER_EMAIL, user.email.trim().lowercase())
+                put(COLUMN_USER_PASSWORD_HASH, user.passwordHash)
+                put(COLUMN_USER_AGE, user.age)
+                put(COLUMN_USER_WEIGHT, user.weight)
+                put(COLUMN_USER_HEIGHT, user.height)
+                put(COLUMN_USER_SEX, user.sex.lowercase())
+                put(COLUMN_USER_DAILY_GOAL, user.dailyWaterGoal)
+                put(COLUMN_USER_NOTIFICATION_FREQ, user.notificationFrequency)
+                put(COLUMN_USER_CREATED_AT, user.createdAt)
+                put(COLUMN_USER_UPDATED_AT, user.updatedAt)
+                put(COLUMN_USER_GOOGLE_ID, user.googleId)
+                put(COLUMN_USER_FACEBOOK_ID, user.facebookId)
+
+                // Only add security columns if they exist in the database
+                if (securityColumnsExist) {
+                    put(COLUMN_USER_SECURITY_QUESTION, user.securityQuestion)
+                    put(COLUMN_USER_SECURITY_ANSWER_HASH, user.securityAnswerHash)
+                    Log.d("DatabaseHelper", "Including security columns in insert")
+                } else {
+                    Log.w("DatabaseHelper", "Security columns don't exist, skipping them")
+                }
+            }
+
+            // Log what we're trying to insert
+            Log.d("DatabaseHelper", "Attempting to insert user:")
+            Log.d("DatabaseHelper", "- Name: '${user.name}'")
+            Log.d("DatabaseHelper", "- Email: '${user.email}'")
+            Log.d("DatabaseHelper", "- Age: ${user.age}")
+            Log.d("DatabaseHelper", "- Weight: ${user.weight}")
+            Log.d("DatabaseHelper", "- Height: ${user.height}")
+            Log.d("DatabaseHelper", "- Sex: '${user.sex}'")
+            Log.d("DatabaseHelper", "- Daily Goal: ${user.dailyWaterGoal}")
+            Log.d("DatabaseHelper", "- Security Question: '${user.securityQuestion}'")
+            Log.d("DatabaseHelper", "- Has Security Answer: ${user.securityAnswerHash.isNotEmpty()}")
+            Log.d("DatabaseHelper", "- Security columns exist: $securityColumnsExist")
+
+            val result = db.insert(TABLE_USERS, null, values)
+
+            if (result == -1L) {
+                Log.e("DatabaseHelper", "Insert failed - db.insert returned -1")
+
+                // Check if it's a constraint violation (duplicate email)
+                val existingUser = getUserByEmail(user.email)
+                if (existingUser != null) {
+                    Log.e("DatabaseHelper", "Insert failed due to duplicate email: ${user.email}")
+                } else {
+                    Log.e("DatabaseHelper", "Insert failed for unknown reason")
+                }
+            } else {
+                Log.d("DatabaseHelper", "Insert successful, user ID: $result")
+
+                // If security columns don't exist but we have security data, try to update them later
+                if (!securityColumnsExist && (user.securityQuestion.isNotEmpty() || user.securityAnswerHash.isNotEmpty())) {
+                    Log.d("DatabaseHelper", "Attempting to add security data after initial insert")
+                    updateSecurityQuestion(result, user.securityQuestion, user.securityAnswerHash)
+                }
+            }
+
+            return result
+
+        } catch (e: Exception) {
+            Log.e("DatabaseHelper", "Exception in insertUser: ${e.message}", e)
+            return -1L
         }
-        return db.insert(TABLE_USERS, null, values)
     }
 
     fun getUserByEmail(email: String): User? {
-        val db = this.readableDatabase
-        val cursor = db.query(
-            TABLE_USERS,
-            null,
-            "$COLUMN_USER_EMAIL = ?",
-            arrayOf(email),
-            null,
-            null,
-            null
-        )
+        if (email.isBlank()) {
+            Log.w("DatabaseHelper", "getUserByEmail called with blank email")
+            return null
+        }
 
-        return if (cursor.moveToFirst()) {
-            val user = cursorToUser(cursor)
-            cursor.close()
-            user
-        } else {
-            cursor.close()
-            null
+        val db = this.readableDatabase
+        var cursor: Cursor? = null
+
+        try {
+            cursor = db.query(
+                TABLE_USERS,
+                null,
+                "$COLUMN_USER_EMAIL = ?",
+                arrayOf(email.trim().lowercase()),
+                null,
+                null,
+                null
+            )
+
+            return if (cursor.moveToFirst()) {
+                val user = cursorToUser(cursor)
+                Log.d("DatabaseHelper", "Found user with email: $email")
+                user
+            } else {
+                Log.d("DatabaseHelper", "No user found with email: $email")
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("DatabaseHelper", "Exception in getUserByEmail: ${e.message}", e)
+            return null
+        } finally {
+            cursor?.close()
         }
     }
 
-    // Create Google Users
+    // Create Google Users (updated to include empty security fields)
     fun createGoogleUser(name: String, email: String, googleId: String): Long {
         if (name.isBlank() || email.isBlank() || googleId.isBlank()) {
+            Log.e("DatabaseHelper", "Cannot create Google user: missing required fields")
             return -1L
         }
 
         val db = this.writableDatabase
         val values = ContentValues().apply {
-            put(COLUMN_USER_NAME, name)
-            put(COLUMN_USER_EMAIL, email)
+            put(COLUMN_USER_NAME, name.trim())
+            put(COLUMN_USER_EMAIL, email.trim().lowercase())
             put(COLUMN_USER_PASSWORD_HASH, "") // Empty for Google users
             put(COLUMN_USER_AGE, 0) // Use 0 to indicate not set
             put(COLUMN_USER_WEIGHT, 0.0)
@@ -219,6 +399,8 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
             put(COLUMN_USER_SEX, "not_specified")
             put(COLUMN_USER_DAILY_GOAL, 2150) // Reasonable default
             put(COLUMN_USER_NOTIFICATION_FREQ, 60)
+            put(COLUMN_USER_SECURITY_QUESTION, "") // Empty for social login users
+            put(COLUMN_USER_SECURITY_ANSWER_HASH, "") // Empty for social login users
             put(COLUMN_USER_CREATED_AT, getCurrentDateTime())
             put(COLUMN_USER_UPDATED_AT, getCurrentDateTime())
             put(COLUMN_USER_GOOGLE_ID, googleId)
@@ -227,16 +409,17 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         return db.insert(TABLE_USERS, null, values)
     }
 
-    // Create Facebook Users
+    // Create Facebook Users (updated to include empty security fields)
     fun createFacebookUser(name: String, email: String, facebookId: String): Long {
         if (name.isBlank() || email.isBlank() || facebookId.isBlank()) {
+            Log.e("DatabaseHelper", "Cannot create Facebook user: missing required fields")
             return -1L
         }
 
         val db = this.writableDatabase
         val values = ContentValues().apply {
-            put(COLUMN_USER_NAME, name)
-            put(COLUMN_USER_EMAIL, email)
+            put(COLUMN_USER_NAME, name.trim())
+            put(COLUMN_USER_EMAIL, email.trim().lowercase())
             put(COLUMN_USER_PASSWORD_HASH, "") // Empty for Facebook users
             put(COLUMN_USER_AGE, 0) // Use 0 to indicate not set
             put(COLUMN_USER_WEIGHT, 0.0)
@@ -244,62 +427,175 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
             put(COLUMN_USER_SEX, "not_specified")
             put(COLUMN_USER_DAILY_GOAL, 2150) // Reasonable default
             put(COLUMN_USER_NOTIFICATION_FREQ, 60)
+            put(COLUMN_USER_SECURITY_QUESTION, "") // Empty for social login users
+            put(COLUMN_USER_SECURITY_ANSWER_HASH, "") // Empty for social login users
             put(COLUMN_USER_CREATED_AT, getCurrentDateTime())
             put(COLUMN_USER_UPDATED_AT, getCurrentDateTime())
-            //put(COLUMN_USER_GOOGLE_ID, null)
             put(COLUMN_USER_FACEBOOK_ID, facebookId)
         }
 
         return db.insert(TABLE_USERS, null, values)
     }
 
-    // New function for authentication
+    // Authentication function
     fun authenticateUser(email: String, password: String): User? {
         val user = getUserByEmail(email)
         return if (user != null && verifyPassword(password, user.passwordHash)) {
+            Log.d("DatabaseHelper", "User authentication successful for: $email")
             user
+        } else {
+            Log.d("DatabaseHelper", "User authentication failed for: $email")
+            null
+        }
+    }
+
+    // Function for password recovery using security question - now uses plain text comparison
+    fun verifySecurityQuestionAnswer(email: String, answer: String): Boolean {
+        val user = getUserByEmail(email)
+        return if (user != null && user.securityAnswerHash.isNotEmpty()) {
+            // Simple case-insensitive comparison instead of hash verification
+            val result = answer.trim().lowercase() == user.securityAnswerHash.trim().lowercase()
+            Log.d("DatabaseHelper", "Security question verification for $email: $result")
+            result
+        } else {
+            Log.d("DatabaseHelper", "Security question verification failed for $email: no user or no security answer")
+            false
+        }
+    }
+
+    // Function to get security question by email
+    fun getSecurityQuestionByEmail(email: String): String? {
+        val user = getUserByEmail(email)
+        return if (user != null && user.securityQuestion.isNotEmpty()) {
+            user.securityQuestion
         } else {
             null
         }
     }
 
-    fun getUserById(userId: Long): User? {
-        val db = this.readableDatabase
-        val cursor = db.query(
+    // Function to update password after security question verification
+    fun updatePasswordWithSecurityVerification(email: String, securityAnswer: String, newPassword: String): Boolean {
+        if (!verifySecurityQuestionAnswer(email, securityAnswer)) {
+            return false
+        }
+
+        val user = getUserByEmail(email) ?: return false
+        val hashedNewPassword = hashPassword(newPassword)
+
+        val db = this.writableDatabase
+        val values = ContentValues().apply {
+            put(COLUMN_USER_PASSWORD_HASH, hashedNewPassword)
+            put(COLUMN_USER_UPDATED_AT, getCurrentDateTime())
+        }
+
+        val rowsUpdated = db.update(
             TABLE_USERS,
-            null,
-            "$COLUMN_USER_ID = ?",
-            arrayOf(userId.toString()),
-            null,
-            null,
-            null
+            values,
+            "$COLUMN_USER_EMAIL = ?",
+            arrayOf(email.trim().lowercase())
         )
 
-        return if (cursor.moveToFirst()) {
-            val user = cursorToUser(cursor)
-            cursor.close()
-            user
-        } else {
-            cursor.close()
-            null
+        return rowsUpdated > 0
+    }
+
+    // Function to update security question and answer - now stores plain text
+    fun updateSecurityQuestion(userId: Long, securityQuestion: String, securityAnswer: String): Boolean {
+        val db = this.writableDatabase
+
+        try {
+            val values = ContentValues().apply {
+                put(COLUMN_USER_SECURITY_QUESTION, securityQuestion)
+                put(COLUMN_USER_SECURITY_ANSWER_HASH, securityAnswer) // Store plain text
+                put(COLUMN_USER_UPDATED_AT, getCurrentDateTime())
+            }
+
+            val rowsUpdated = db.update(
+                TABLE_USERS,
+                values,
+                "$COLUMN_USER_ID = ?",
+                arrayOf(userId.toString())
+            )
+
+            Log.d("DatabaseHelper", "Updated security question for user $userId: ${rowsUpdated > 0}")
+            return rowsUpdated > 0
+        } catch (e: Exception) {
+            Log.e("DatabaseHelper", "Error updating security question: ${e.message}", e)
+            return false
+        }
+    }
+
+    fun getUserById(userId: Long): User? {
+        val db = this.readableDatabase
+        var cursor: Cursor? = null
+
+        try {
+            cursor = db.query(
+                TABLE_USERS,
+                null,
+                "$COLUMN_USER_ID = ?",
+                arrayOf(userId.toString()),
+                null,
+                null,
+                null
+            )
+
+            return if (cursor.moveToFirst()) {
+                cursorToUser(cursor)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("DatabaseHelper", "Exception in getUserById: ${e.message}", e)
+            return null
+        } finally {
+            cursor?.close()
         }
     }
 
     fun updateUser(user: User): Int {
         val db = this.writableDatabase
         val values = ContentValues().apply {
-            put(COLUMN_USER_NAME, user.name)
-            put(COLUMN_USER_EMAIL, user.email)
+            put(COLUMN_USER_NAME, user.name.trim())
+            put(COLUMN_USER_EMAIL, user.email.trim().lowercase())
             put(COLUMN_USER_PASSWORD_HASH, user.passwordHash)
             put(COLUMN_USER_AGE, user.age)
             put(COLUMN_USER_WEIGHT, user.weight)
             put(COLUMN_USER_HEIGHT, user.height)
-            put(COLUMN_USER_SEX, user.sex)
+            put(COLUMN_USER_SEX, user.sex.lowercase())
             put(COLUMN_USER_DAILY_GOAL, user.dailyWaterGoal)
             put(COLUMN_USER_NOTIFICATION_FREQ, user.notificationFrequency)
+            put(COLUMN_USER_SECURITY_QUESTION, user.securityQuestion)
+            put(COLUMN_USER_SECURITY_ANSWER_HASH, user.securityAnswerHash)
             put(COLUMN_USER_UPDATED_AT, getCurrentDateTime())
         }
         return db.update(TABLE_USERS, values, "$COLUMN_USER_ID = ?", arrayOf(user.id.toString()))
+    }
+
+    fun updateUserPassword(email: String, newPassword: String): Boolean {
+        return try {
+            val db = writableDatabase
+
+            // Hash the new password before storing it
+            val hashedPassword = hashPassword(newPassword)
+
+            val values = ContentValues().apply {
+                put(COLUMN_USER_PASSWORD_HASH, hashedPassword) // Use the correct column name
+                put(COLUMN_USER_UPDATED_AT, getCurrentDateTime()) // Update the timestamp
+            }
+
+            val rowsAffected = db.update(
+                TABLE_USERS, // Use the constant for table name
+                values,
+                "$COLUMN_USER_EMAIL = ?", // Use the constant for email column
+                arrayOf(email.trim().lowercase()) // Normalize email for consistency
+            )
+
+            Log.d("DatabaseHelper", "Password update for $email: $rowsAffected rows affected")
+            rowsAffected > 0
+        } catch (e: Exception) {
+            Log.e("DatabaseHelper", "Error updating password for $email", e)
+            false
+        }
     }
 
     fun deleteUser(userId: Long): Int {
@@ -307,7 +603,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         return db.delete(TABLE_USERS, "$COLUMN_USER_ID = ?", arrayOf(userId.toString()))
     }
 
-    // Water intake functions (unchanged)
+    // Water intake functions
     fun logWaterIntake(intake: WaterIntake): Long {
         val db = this.writableDatabase
         val values = ContentValues().apply {
@@ -327,107 +623,135 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
 
     fun getDailyWaterIntake(userId: Long, date: String): Int {
         val db = this.readableDatabase
-        val cursor = db.rawQuery(
-            """
-            SELECT SUM($COLUMN_INTAKE_AMOUNT) as total 
-            FROM $TABLE_WATER_INTAKE 
-            WHERE $COLUMN_INTAKE_USER_ID = ? AND $COLUMN_INTAKE_DATE = ?
-            """.trimIndent(),
-            arrayOf(userId.toString(), date)
-        )
+        var cursor: Cursor? = null
 
-        val total = if (cursor.moveToFirst()) {
-            cursor.getInt(0)
-        } else {
-            0
+        try {
+            cursor = db.rawQuery(
+                """
+                SELECT SUM($COLUMN_INTAKE_AMOUNT) as total 
+                FROM $TABLE_WATER_INTAKE 
+                WHERE $COLUMN_INTAKE_USER_ID = ? AND $COLUMN_INTAKE_DATE = ?
+                """.trimIndent(),
+                arrayOf(userId.toString(), date)
+            )
+
+            val total = if (cursor.moveToFirst()) {
+                cursor.getInt(0)
+            } else {
+                0
+            }
+            return total
+        } catch (e: Exception) {
+            Log.e("DatabaseHelper", "Exception in getDailyWaterIntake: ${e.message}", e)
+            return 0
+        } finally {
+            cursor?.close()
         }
-        cursor.close()
-        return total
     }
 
     // Method for Drink Frequency in Analytics Water Report
     fun getIntakeRecordsBetweenDates(userId: Long, startDate: String, endDate: String): List<WaterIntake> {
         val intakeRecords = mutableListOf<WaterIntake>()
         val db = this.readableDatabase
+        var cursor: Cursor? = null
 
         val query = """
-        SELECT * FROM $TABLE_WATER_INTAKE 
-        WHERE $COLUMN_INTAKE_USER_ID = ? 
-        AND $COLUMN_INTAKE_DATE BETWEEN ? AND ?
-        ORDER BY $COLUMN_INTAKE_DATE ASC, $COLUMN_INTAKE_TIME ASC
-    """.trimIndent()
+            SELECT * FROM $TABLE_WATER_INTAKE 
+            WHERE $COLUMN_INTAKE_USER_ID = ? 
+            AND $COLUMN_INTAKE_DATE BETWEEN ? AND ?
+            ORDER BY $COLUMN_INTAKE_DATE ASC, $COLUMN_INTAKE_TIME ASC
+        """.trimIndent()
 
-        val cursor = db.rawQuery(query, arrayOf(userId.toString(), startDate, endDate))
+        try {
+            cursor = db.rawQuery(query, arrayOf(userId.toString(), startDate, endDate))
 
-        if (cursor.moveToFirst()) {
-            do {
-                val intake = WaterIntake(
-                    id = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_INTAKE_ID)),
-                    userId = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_INTAKE_USER_ID)),
-                    amount = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_INTAKE_AMOUNT)),
-                    date = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_INTAKE_DATE)),
-                    time = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_INTAKE_TIME)),
-                    createdAt = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_INTAKE_CREATED_AT))
-                )
-                intakeRecords.add(intake)
-            } while (cursor.moveToNext())
+            if (cursor.moveToFirst()) {
+                do {
+                    val intake = WaterIntake(
+                        id = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_INTAKE_ID)),
+                        userId = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_INTAKE_USER_ID)),
+                        amount = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_INTAKE_AMOUNT)),
+                        date = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_INTAKE_DATE)),
+                        time = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_INTAKE_TIME)),
+                        createdAt = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_INTAKE_CREATED_AT))
+                    )
+                    intakeRecords.add(intake)
+                } while (cursor.moveToNext())
+            }
+        } catch (e: Exception) {
+            Log.e("DatabaseHelper", "Exception in getIntakeRecordsBetweenDates: ${e.message}", e)
+        } finally {
+            cursor?.close()
         }
 
-        cursor.close()
         return intakeRecords
     }
 
     fun getWaterIntakeHistory(userId: Long, date: String): List<WaterIntake> {
         val db = this.readableDatabase
         val intakeList = mutableListOf<WaterIntake>()
+        var cursor: Cursor? = null
 
-        val cursor = db.query(
-            TABLE_WATER_INTAKE,
-            null,
-            "$COLUMN_INTAKE_USER_ID = ? AND $COLUMN_INTAKE_DATE = ?",
-            arrayOf(userId.toString(), date),
-            null,
-            null,
-            "$COLUMN_INTAKE_TIME ASC"
-        )
+        try {
+            cursor = db.query(
+                TABLE_WATER_INTAKE,
+                null,
+                "$COLUMN_INTAKE_USER_ID = ? AND $COLUMN_INTAKE_DATE = ?",
+                arrayOf(userId.toString(), date),
+                null,
+                null,
+                "$COLUMN_INTAKE_TIME ASC"
+            )
 
-        while (cursor.moveToNext()) {
-            intakeList.add(cursorToWaterIntake(cursor))
+            while (cursor.moveToNext()) {
+                intakeList.add(cursorToWaterIntake(cursor))
+            }
+        } catch (e: Exception) {
+            Log.e("DatabaseHelper", "Exception in getWaterIntakeHistory: ${e.message}", e)
+        } finally {
+            cursor?.close()
         }
-        cursor.close()
+
         return intakeList
     }
 
     fun getLast30DaysSummary(userId: Long): List<DailyIntakeSummary> {
         val db = this.readableDatabase
         val summaryList = mutableListOf<DailyIntakeSummary>()
+        var cursor: Cursor? = null
 
         // Get user's daily goal
         val user = getUserById(userId)
         val dailyGoal = user?.dailyWaterGoal ?: 2000
 
-        val cursor = db.rawQuery(
-            """
-            SELECT 
-                $COLUMN_INTAKE_DATE,
-                SUM($COLUMN_INTAKE_AMOUNT) as total_intake
-            FROM $TABLE_WATER_INTAKE 
-            WHERE $COLUMN_INTAKE_USER_ID = ? 
-                AND $COLUMN_INTAKE_DATE >= date('now', '-30 days')
-            GROUP BY $COLUMN_INTAKE_DATE
-            ORDER BY $COLUMN_INTAKE_DATE DESC
-            """.trimIndent(),
-            arrayOf(userId.toString())
-        )
+        try {
+            cursor = db.rawQuery(
+                """
+                SELECT 
+                    $COLUMN_INTAKE_DATE,
+                    SUM($COLUMN_INTAKE_AMOUNT) as total_intake
+                FROM $TABLE_WATER_INTAKE 
+                WHERE $COLUMN_INTAKE_USER_ID = ? 
+                    AND $COLUMN_INTAKE_DATE >= date('now', '-30 days')
+                GROUP BY $COLUMN_INTAKE_DATE
+                ORDER BY $COLUMN_INTAKE_DATE DESC
+                """.trimIndent(),
+                arrayOf(userId.toString())
+            )
 
-        while (cursor.moveToNext()) {
-            val date = cursor.getString(0)
-            val totalIntake = cursor.getInt(1)
-            val goalAchieved = totalIntake >= dailyGoal
+            while (cursor.moveToNext()) {
+                val date = cursor.getString(0)
+                val totalIntake = cursor.getInt(1)
+                val goalAchieved = totalIntake >= dailyGoal
 
-            summaryList.add(DailyIntakeSummary(date, totalIntake, goalAchieved))
+                summaryList.add(DailyIntakeSummary(date, totalIntake, goalAchieved))
+            }
+        } catch (e: Exception) {
+            Log.e("DatabaseHelper", "Exception in getLast30DaysSummary: ${e.message}", e)
+        } finally {
+            cursor?.close()
         }
-        cursor.close()
+
         return summaryList
     }
 
@@ -449,6 +773,8 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
             sex = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_SEX)),
             dailyWaterGoal = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_USER_DAILY_GOAL)),
             notificationFrequency = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_USER_NOTIFICATION_FREQ)),
+            securityQuestion = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_SECURITY_QUESTION)) ?: "",
+            securityAnswerHash = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_SECURITY_ANSWER_HASH)) ?: "",
             createdAt = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_CREATED_AT)),
             updatedAt = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_UPDATED_AT)),
             googleId = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_GOOGLE_ID)),

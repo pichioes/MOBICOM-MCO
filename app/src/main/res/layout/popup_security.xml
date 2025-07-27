@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="500dp"
+    android:padding="24dp"
+    android:background="@drawable/popup_background"
+    android:elevation="10dp">
+
+    <!-- Rounded gray handle -->
+    <View
+        android:id="@+id/handleLine"
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp"
+        android:background="#D1D5DB"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/securityTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:fontFamily="@font/newsreader"
+        android:text="Security Question"
+        android:textColor="#1F2937"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/handleLine" />
+
+    <!-- Subtext -->
+    <TextView
+        android:id="@+id/securitySubText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:fontFamily="@font/outfit"
+        android:text="Please answer your security question\nto reset your password."
+        android:textColor="#6B7280"
+        android:textSize="14sp"
+        android:textAlignment="center"
+        android:lineSpacingExtra="2dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/securityTitle" />
+
+    <!-- Security Question Display -->
+    <TextView
+        android:id="@+id/securityQuestionText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:fontFamily="@font/outfit"
+        android:text="What is your Favorite Movie?"
+        android:textColor="#1F2937"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textAlignment="center"
+        android:padding="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/securitySubText" />
+
+    <!-- Answer Input Field -->
+    <EditText
+        android:id="@+id/securityAnswerInput"
+        android:layout_width="250dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/edittext_background"
+        android:fontFamily="@font/outfit"
+        android:hint="Answer:"
+        android:inputType="text"
+        android:padding="16dp"
+        android:textColor="#1F2937"
+        android:textColorHint="#9CA3AF"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/securityQuestionText" />
+
+    <!-- Submit Button -->
+    <Button
+        android:id="@+id/btnSecuritySubmit"
+        android:layout_width="241dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="40dp"
+        android:backgroundTint="#222222"
+        android:background="@drawable/loginbutton_background"
+        android:fontFamily="@font/inter_medium"
+        android:text="Confirm"
+        android:textColor="#FFFFFF"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/securityAnswerInput" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.text.method.PasswordTransformationMethod
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import java.security.MessageDigest
 
 class SignupActivity : AppCompatActivity() {
 
@@ -76,7 +77,14 @@ class SignupActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Hash the password before inserting it
+            // Check if email already exists
+            val existingUser = dbHelper.getUserByEmail(email)
+            if (existingUser != null) {
+                Toast.makeText(this, "An account with this email already exists", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Hash the password before storing it
             val hashedPassword = hashPassword(password)
 
             // Store email and password hash temporarily in SharedPreferences
@@ -86,15 +94,22 @@ class SignupActivity : AppCompatActivity() {
             editor.putString("user_password_hash", hashedPassword)
             editor.apply()
 
-            // Navigate to profile creation
-            navigateToProfileCreation()
+            // Navigate to security question setup
+            navigateToSecurityQuestion()
         }
     }
 
-    private fun navigateToProfileCreation() {
-        // Move to profile creation activity
-        val intent = Intent(this, CreateProfileActivity::class.java)
+    // Password hashing utility
+    private fun hashPassword(password: String): String {
+        val bytes = password.toByteArray()
+        val md = MessageDigest.getInstance("SHA-256")
+        val digest = md.digest(bytes)
+        return digest.fold("") { str, it -> str + "%02x".format(it) }
+    }
+
+    private fun navigateToSecurityQuestion() {
+        // Move to security question activity
+        val intent = Intent(this, SecurityQuestionActivity::class.java)
         startActivity(intent)
-        finish()  // Close SignupActivity
     }
 }

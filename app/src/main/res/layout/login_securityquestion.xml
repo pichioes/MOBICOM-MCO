@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <!-- Background vector image -->
+    <ImageView
+        android:id="@+id/signupVector"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:contentDescription="Decorative background"
+        android:scaleType="fitStart"
+        android:src="@drawable/signup_vector" />
+
+    <!-- Foreground content -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <!-- Back Button aligned to the left -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="start"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/securityBackButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="Back"
+                    android:minWidth="48dp"
+                    android:minHeight="48dp"
+                    android:src="@drawable/back_arrow" />
+            </LinearLayout>
+
+            <!-- Title -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="30dp"
+                android:layout_marginBottom="40dp"
+                android:fontFamily="@font/newsreader"
+                android:text="Security Question"
+                android:textColor="@android:color/white"
+                android:textSize="36sp"
+                android:textStyle="bold" />
+
+            <!-- Security Question Spinner -->
+            <Spinner
+                android:id="@+id/securityQuestion"
+                android:layout_width="319dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="15dp"
+                android:background="@drawable/edittext_background"
+                android:padding="12dp" />
+
+            <!-- Answer Input -->
+            <RelativeLayout
+                android:layout_width="319dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="40dp">
+
+                <EditText
+                    android:id="@+id/securityAnswerInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/edittext_background"
+                    android:fontFamily="@font/outfit"
+                    android:hint="Answer:"
+                    android:inputType="text"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:textColor="@android:color/black"
+                    android:textColorHint="#888888" />
+
+            </RelativeLayout>
+
+            <!-- Continue Button -->
+            <Button
+                android:id="@+id/continueButton"
+                android:layout_width="241dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="30dp"
+                android:background="@drawable/loginbutton_background"
+                android:backgroundTint="#222222"
+                android:fontFamily="@font/inter_medium"
+                android:text="Continue"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="25dp"
+                android:orientation="horizontal"/>
+
+            <!-- Bottom Illustration -->
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="380dp"
+                android:layout_gravity="center_horizontal"
+                android:contentDescription="Sign Up Illustration"
+                android:scaleType="fitCenter"
+                android:src="@drawable/forgot_password" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>
