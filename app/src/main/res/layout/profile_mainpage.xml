@@ -104,7 +104,7 @@
                     android:textColor="@color/white" />
 
                 <TextView
-                    android:id="@+id/textView"
+                    android:id="@+id/Goal_header"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/outfit"
@@ -113,7 +113,7 @@
                     android:paddingTop="15dp" />
 
                 <TextView
-                    android:id="@+id/textView2"
+                    android:id="@+id/goal_display"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
