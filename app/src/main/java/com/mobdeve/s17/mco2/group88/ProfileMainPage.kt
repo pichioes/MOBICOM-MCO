@@ -271,11 +271,46 @@ class ProfileMainPage : AppCompatActivity() {
         cancelBtn.setOnClickListener { dialog.dismiss() }
         deleteBtn.setOnClickListener {
             dialog.dismiss()
-            // Implement delete account logic here
+            deleteUserAccount() // Call the delete account function
         }
 
         dialog.setContentView(view)
         dialog.show()
+    }
+
+    // Handle user account deletion
+    private fun deleteUserAccount() {
+        val sharedPreferences = getSharedPreferences("AquaBuddyPrefs", MODE_PRIVATE)
+        val userId = sharedPreferences.getLong("user_id", -1L)
+
+        if (userId != -1L) {
+            val dbHelper = AquaBuddyDatabaseHelper(this)
+
+            // Attempt to delete the user from the database
+            val deleteResult = dbHelper.deleteUser(userId)
+
+            if (deleteResult > 0) {
+                // User successfully deleted from database
+                Toast.makeText(this, "Account deleted successfully", Toast.LENGTH_SHORT).show()
+
+                // Clear all SharedPreferences data
+                val editor = sharedPreferences.edit()
+                editor.clear()
+                editor.apply()
+
+                // Navigate back to login screen and clear the activity stack
+                val intent = Intent(this, LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            } else {
+                // Failed to delete user from database
+                Toast.makeText(this, "Failed to delete account. Please try again.", Toast.LENGTH_LONG).show()
+            }
+        } else {
+            // No user is logged in
+            Toast.makeText(this, "No user logged in", Toast.LENGTH_SHORT).show()
+        }
     }
 
     // Show Logout popup
