@@ -17,6 +17,9 @@ import kotlin.math.roundToInt
 
 class ProfileMainPage : AppCompatActivity() {
 
+    private var isNotificationsEnabled = true
+    private var notificationFrequencyMinutes = 30 // Default 30 minutes
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.profile_mainpage)
@@ -26,6 +29,9 @@ class ProfileMainPage : AppCompatActivity() {
 
         // Load and display user's current goal
         loadAndDisplayGoal()
+
+        // Load notification settings
+        loadNotificationSettings()
 
         // Handling click for logout section
         val logoutLayer = findViewById<View>(R.id.logout_layer)
@@ -57,12 +63,56 @@ class ProfileMainPage : AppCompatActivity() {
             val intent = Intent(this, EditProfile::class.java)
             startActivity(intent)
         }
+
+        // Handle the profile notifications switch
+        val profileNotificationSwitch = findViewById<Switch>(R.id.switch1)
+        profileNotificationSwitch.isChecked = isNotificationsEnabled
+        profileNotificationSwitch.setOnCheckedChangeListener { _, isChecked ->
+            isNotificationsEnabled = isChecked
+            saveNotificationSettings()
+            updateWaterReminderService()
+        }
+
+        // Start the water reminder service if notifications are enabled
+        if (isNotificationsEnabled) {
+            WaterReminderServiceHelper.startWaterReminderService(this)
+        }
     }
 
     override fun onResume() {
         super.onResume()
         // Refresh the goal display when returning to this activity
         loadAndDisplayGoal()
+        // Reload notification settings
+        loadNotificationSettings()
+    }
+
+    // Load notification settings from SharedPreferences
+    private fun loadNotificationSettings() {
+        val sharedPreferences = getSharedPreferences("AquaBuddyPrefs", MODE_PRIVATE)
+        isNotificationsEnabled = sharedPreferences.getBoolean("notifications_enabled", true)
+        notificationFrequencyMinutes = sharedPreferences.getInt("notification_frequency", 30)
+
+        // Update the profile switch
+        findViewById<Switch>(R.id.switch1)?.isChecked = isNotificationsEnabled
+    }
+
+    // Save notification settings to SharedPreferences
+    private fun saveNotificationSettings() {
+        val sharedPreferences = getSharedPreferences("AquaBuddyPrefs", MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putBoolean("notifications_enabled", isNotificationsEnabled)
+        editor.putInt("notification_frequency", notificationFrequencyMinutes)
+        editor.apply()
+    }
+
+    // Update the water reminder service based on current settings
+    private fun updateWaterReminderService() {
+        if (isNotificationsEnabled) {
+            WaterReminderServiceHelper.startWaterReminderService(this)
+        } else {
+            WaterReminderServiceHelper.stopWaterReminderService(this)
+        }
     }
 
     private fun setupBottomNavigation() {
@@ -293,6 +343,9 @@ class ProfileMainPage : AppCompatActivity() {
                 // User successfully deleted from database
                 Toast.makeText(this, "Account deleted successfully", Toast.LENGTH_SHORT).show()
 
+                // Stop the water reminder service
+                WaterReminderServiceHelper.stopWaterReminderService(this)
+
                 // Clear all SharedPreferences data
                 val editor = sharedPreferences.edit()
                 editor.clear()
@@ -333,6 +386,9 @@ class ProfileMainPage : AppCompatActivity() {
 
     // Handle user logout functionality
     private fun logoutUser() {
+        // Stop the water reminder service
+        WaterReminderServiceHelper.stopWaterReminderService(this)
+
         // Clear user data (e.g., SharedPreferences)
         val sharedPreferences = getSharedPreferences("AquaBuddyPrefs", MODE_PRIVATE)
         val editor = sharedPreferences.edit()
@@ -346,19 +402,81 @@ class ProfileMainPage : AppCompatActivity() {
         finish()  // Close the current activity to prevent returning back to it
     }
 
-    // Show Notifications Popup
+    // Show Notifications Popup with enhanced functionality
     private fun showNotificationsPopup() {
         val dialog = android.app.Dialog(this)
         val view = layoutInflater.inflate(R.layout.popup_notifications, null)
 
         val closeButton = view.findViewById<ImageButton>(R.id.customizeCloseButton)
+        val reminderSpinner = view.findViewById<Spinner>(R.id.reminder_spinner)
+        val notificationSwitch = view.findViewById<Switch>(R.id.notification_switch)
+        val confirmButton = view.findViewById<Button>(R.id.confirm_notifications)
+
+        // Set current notification settings in the popup
+        notificationSwitch.isChecked = isNotificationsEnabled
+
+        // Setup spinner with current frequency
+        val reminderOptions = arrayOf("1 minute", "5 minutes", "10 minutes", "15 minutes", "30 minutes", "1 hour", "2 hours", "3 hours")
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, reminderOptions)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        reminderSpinner.adapter = adapter
+
+        // Set spinner to current frequency
+        val currentSelection = when (notificationFrequencyMinutes) {
+            1 -> 0
+            5 -> 1
+            10 -> 2
+            15 -> 3
+            30 -> 4
+            60 -> 5
+            120 -> 6
+            180 -> 7
+            else -> 4 // Default to 30 minutes
+        }
+        reminderSpinner.setSelection(currentSelection)
+
         closeButton.setOnClickListener {
             dialog.dismiss()
         }
 
-        val confirmButton = view.findViewById<Button>(R.id.confirm_notifications)
         confirmButton.setOnClickListener {
-            // Handle logic to confirm notification settings
+            // Get new settings from popup
+            val newNotificationsEnabled = notificationSwitch.isChecked
+            val selectedFrequency = when (reminderSpinner.selectedItemPosition) {
+                0 -> 1   // 1 minute
+                1 -> 5   // 5 minutes
+                2 -> 10  // 10 minutes
+                3 -> 15  // 15 minutes
+                4 -> 30  // 30 minutes
+                5 -> 60  // 1 hour
+                6 -> 120 // 2 hours
+                7 -> 180 // 3 hours
+                else -> 30
+            }
+
+            // Update settings
+            isNotificationsEnabled = newNotificationsEnabled
+            notificationFrequencyMinutes = selectedFrequency
+
+            // Save settings
+            saveNotificationSettings()
+
+            // Update profile switch
+            findViewById<Switch>(R.id.switch1)?.isChecked = isNotificationsEnabled
+
+            // Update the background service with new settings
+            WaterReminderServiceHelper.updateServiceSettings(this)
+
+            // Show confirmation message
+            val statusMessage = if (isNotificationsEnabled) {
+                val timeUnit = if (notificationFrequencyMinutes < 60) "minutes" else "hours"
+                val timeValue = if (notificationFrequencyMinutes < 60) notificationFrequencyMinutes else (notificationFrequencyMinutes / 60)
+                "Notifications enabled every $timeValue $timeUnit"
+            } else {
+                "Notifications disabled"
+            }
+            Toast.makeText(this, statusMessage, Toast.LENGTH_SHORT).show()
+
             dialog.dismiss()
         }
 

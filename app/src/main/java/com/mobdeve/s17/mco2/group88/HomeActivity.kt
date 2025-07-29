@@ -32,36 +32,34 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var userNameTextView: TextView
     private lateinit var streakTextView: TextView
     private lateinit var goalPercentageTextView: TextView
-    private lateinit var nextSipTextView: TextView  // Added as class property for easier access
     private var userId: Long = -1
     private var currentIntake = mutableStateOf(0) // This will store the current intake for the day.
-    private lateinit var notificationHelper: NotificationHelper
     private val NOTIFICATION_PERMISSION_REQUEST_CODE = 1001
 
     // Add mutable state for week progress to make it reactive
     private var weekProgress = mutableStateOf(Array(7) { -1 })
-
-    private var timer: Timer? = null
-    private var timerTask: TimerTask? = null
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.homepage)
 
-        notificationHelper = NotificationHelper(this)
         requestNotificationPermission()
         dbHelper = AquaBuddyDatabaseHelper(this)
 
         // Get the user ID from SharedPreferences (or wherever it's stored)
         userId = getCurrentUserId()
 
+        // Start water reminder service if notifications are enabled
+        if (WaterReminderServiceHelper.areNotificationsEnabled(this)) {
+            WaterReminderServiceHelper.startWaterReminderService(this)
+        }
+
         // Fetch user data (e.g., username) from the database
         val user = dbHelper.getUserById(userId)
         userNameTextView = findViewById(R.id.userName)
         streakTextView = findViewById(R.id.Streak)  // Streak TextView
         goalPercentageTextView = findViewById(R.id.GoalPercentage)  // Goal Percentage TextView
-        nextSipTextView = findViewById<TextView>(R.id.NextSip)  // Initialize as class property
 
         // Set the username in the TextView
         userNameTextView.text = user?.name ?: "User"
@@ -84,9 +82,6 @@ class HomeActivity : AppCompatActivity() {
         switchCupButton.setOnClickListener {
             showPopup()
         }
-
-        // Set up notification countdown
-        startNextSipCountdown(nextSipTextView)
 
         val weekBarComposeView = findViewById<ComposeView>(R.id.WeekBar)
         weekBarComposeView.setContent {
@@ -115,9 +110,6 @@ class HomeActivity : AppCompatActivity() {
 
                     // Update week progress in real-time
                     updateWeekProgress()
-
-                    // RESET THE TIMER WHEN NEW WATER INTAKE IS RECORDED
-                    resetTimer(nextSipTextView)
                 }
             )
         }
@@ -161,8 +153,6 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-
-
     // Function to fetch water intake records
     private fun fetchWaterIntake() {
         val waterIntakes = dbHelper.getWaterIntakeHistory(userId, getCurrentDate())
@@ -199,18 +189,6 @@ class HomeActivity : AppCompatActivity() {
         } catch (e: Exception) {
             return 0 // Return 0 if parsing fails
         }
-    }
-
-    private fun resetTimer(nextSipTextView: TextView) {
-        // Cancel the existing timer if it exists
-        timerTask?.cancel()
-        timer?.cancel()
-
-        // Cancel any existing notification since user drank water
-        notificationHelper.cancelWaterReminderNotification()
-
-        // Start a new timer
-        startNextSipCountdown(nextSipTextView)
     }
 
     private fun updateStreakAndGoalPercentage() {
@@ -309,7 +287,6 @@ class HomeActivity : AppCompatActivity() {
 
         return progressArray
     }
-
 
     private fun setupBottomNavigation() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
@@ -463,35 +440,6 @@ class HomeActivity : AppCompatActivity() {
         return SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
     }
 
-    private fun startNextSipCountdown(nextSipTextView: TextView) {
-        val notificationFrequency = .5  // 30 seconds
-
-        // Create a new timer and task
-        timer = Timer()
-        timerTask = object : TimerTask() {
-            var timeLeft = notificationFrequency + 1
-
-            override fun run() {
-                runOnUiThread {
-                    nextSipTextView.text = "$timeLeft Mins"
-                }
-
-                timeLeft--
-
-                if (timeLeft <= 0) {
-                    // Time's up! Show notification
-                    notificationHelper.showWaterReminderNotification()
-
-                    // Reset the timer
-                    timeLeft = notificationFrequency
-                }
-            }
-        }
-
-        // Schedule the timer to update every minute
-        timer?.scheduleAtFixedRate(timerTask, 0, 60000)  // 60000ms = 1 minute
-    }
-
     private fun logWaterIntake(record: WaterRecord) {
         val intake = WaterIntake(
             userId = userId,
@@ -501,12 +449,5 @@ class HomeActivity : AppCompatActivity() {
             createdAt = getCurrentDateTime()
         )
         dbHelper.logWaterIntake(intake)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        // Clean up timer when activity is destroyed
-        timerTask?.cancel()
-        timer?.cancel()
     }
 }
