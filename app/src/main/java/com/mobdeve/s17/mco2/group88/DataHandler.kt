@@ -806,4 +806,62 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         val dailyIntake = getDailyWaterIntake(userId, date)
         return dailyIntake >= user.dailyWaterGoal
     }
+
+    // ADD THIS METHOD HERE - INSIDE THE CLASS
+    fun getConsecutiveGoalAchievementStreak(userId: Long): Int {
+        val user = getUserById(userId) ?: return 0
+        val dailyGoal = user.dailyWaterGoal
+
+        val db = this.readableDatabase
+        var cursor: Cursor? = null
+        var streak = 0
+
+        try {
+            // Get daily totals for the last 365 days, ordered by date descending
+            cursor = db.rawQuery(
+                """
+                SELECT 
+                    $COLUMN_INTAKE_DATE,
+                    SUM($COLUMN_INTAKE_AMOUNT) as daily_total
+                FROM $TABLE_WATER_INTAKE 
+                WHERE $COLUMN_INTAKE_USER_ID = ? 
+                    AND $COLUMN_INTAKE_DATE >= date('now', '-365 days')
+                GROUP BY $COLUMN_INTAKE_DATE
+                ORDER BY $COLUMN_INTAKE_DATE DESC
+                """.trimIndent(),
+                arrayOf(userId.toString())
+            )
+
+            val today = getCurrentDate()
+
+            if (cursor.moveToFirst()) {
+                do {
+                    val date = cursor.getString(0)
+                    val dailyTotal = cursor.getInt(1)
+
+                    if (dailyTotal >= dailyGoal) {
+                        streak++
+                    } else {
+                        // If this is today and there's some intake, don't break streak yet
+                        if (date == today && dailyTotal > 0) {
+                            continue
+                        } else {
+                            // Past day didn't meet goal or today with no intake, break streak
+                            break
+                        }
+                    }
+
+                } while (cursor.moveToNext())
+            }
+
+        } catch (e: Exception) {
+            Log.e("DatabaseHelper", "Exception in getConsecutiveGoalAchievementStreak: ${e.message}", e)
+            return 0
+        } finally {
+            cursor?.close()
+        }
+
+        return streak
+    }
+
 }

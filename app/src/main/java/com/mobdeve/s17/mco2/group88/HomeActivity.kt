@@ -213,17 +213,9 @@ class HomeActivity : AppCompatActivity() {
         goalPercentageTextView.text = "${goalPercentage.toInt()}%"
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun calculateStreak(): Int {
-        val waterIntakes = dbHelper.getWaterIntakeHistory(userId, getCurrentDate())
-        var streak = 0
-
-        // Loop through water intakes to check streak
-        for (intake in waterIntakes) {
-            if (intake.amount >= 2150) {
-                streak++
-            }
-        }
-        return streak
+        return dbHelper.getConsecutiveGoalAchievementStreak(userId)
     }
 
     // New function to update week progress and trigger recomposition
