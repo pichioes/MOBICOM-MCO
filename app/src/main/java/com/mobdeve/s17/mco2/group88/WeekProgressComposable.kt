@@ -24,7 +24,7 @@ import java.util.Date
 
 @Composable
 @RequiresApi(Build.VERSION_CODES.O) // Only for API level 26 and higher
-fun WeekBar(userProgress: Array<Int>) { // Accept userProgress as a parameter
+fun WeekBar(userProgress: Array<Int>, dailyGoal: Int = 2150) { // Accept dailyGoal as a parameter
     val weekDays = arrayOf("S", "M", "T", "W", "T", "F", "S")
 
     // Multiple methods to get current day for debugging
@@ -53,13 +53,15 @@ fun WeekBar(userProgress: Array<Int>) { // Accept userProgress as a parameter
     }
 
     // Extensive debug output
-    println("=== DAY DEBUG INFO ===")
+    println("=== WEEK BAR DEBUG INFO ===")
     println("Calendar.DAY_OF_WEEK: $systemDayOfWeek")
     println("Day from millis: $dayFromMillis")
     println("SimpleDateFormat day: $currentDayName")
     println("Current time millis: $currentTime")
     println("Calculated array index: $currentDay")
-    println("======================")
+    println("Daily goal: $dailyGoal")
+    println("User progress array: ${userProgress.contentToString()}")
+    println("===========================")
 
     // Create a horizontal row to hold the days and their progress bars
     Column(

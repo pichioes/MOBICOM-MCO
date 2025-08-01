@@ -32,18 +32,26 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var userNameTextView: TextView
     private lateinit var streakTextView: TextView
     private lateinit var goalPercentageTextView: TextView
+    private lateinit var nextSipTextView: TextView
     private var userId: Long = -1
     private var currentIntake = mutableStateOf(0) // This will store the current intake for the day.
+    private lateinit var notificationHelper: NotificationHelper
     private val NOTIFICATION_PERMISSION_REQUEST_CODE = 1001
 
     // Add mutable state for week progress to make it reactive
     private var weekProgress = mutableStateOf(Array(7) { -1 })
+    // Add mutable state for user's daily goal
+    private var userDailyGoal = mutableStateOf(2150)
+
+    private var timer: Timer? = null
+    private var timerTask: TimerTask? = null
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.homepage)
 
+        notificationHelper = NotificationHelper(this)
         requestNotificationPermission()
         dbHelper = AquaBuddyDatabaseHelper(this)
 
@@ -60,9 +68,13 @@ class HomeActivity : AppCompatActivity() {
         userNameTextView = findViewById(R.id.userName)
         streakTextView = findViewById(R.id.Streak)  // Streak TextView
         goalPercentageTextView = findViewById(R.id.GoalPercentage)  // Goal Percentage TextView
+        nextSipTextView = findViewById<TextView>(R.id.NextSip)  // Initialize as class property
 
         // Set the username in the TextView
         userNameTextView.text = user?.name ?: "User"
+
+        // Set the user's daily goal
+        userDailyGoal.value = user?.dailyWaterGoal ?: 2150
 
         setupBottomNavigation()
 
@@ -83,17 +95,20 @@ class HomeActivity : AppCompatActivity() {
             showPopup()
         }
 
+        // Set up notification countdown
+        startNextSipCountdown(nextSipTextView)
+
         val weekBarComposeView = findViewById<ComposeView>(R.id.WeekBar)
         weekBarComposeView.setContent {
-            // Use the reactive weekProgress state
-            WeekBar(userProgress = weekProgress.value)
+            // Use the reactive weekProgress state and pass the user's daily goal
+            WeekBar(userProgress = weekProgress.value, dailyGoal = userDailyGoal.value)
         }
 
         // Compose view for the CircularProgressWithCap (water intake progress)
         val circularProgressComposeView = findViewById<ComposeView>(R.id.composeProgress)
         circularProgressComposeView.setContent {
             CircularProgressWithCap(
-                goalAmount = 2150,
+                goalAmount = userDailyGoal.value,  // Use user's actual daily goal
                 selectedCupSize = selectedCupSize.value,  // Pass the selected cup size here
                 currentIntake = currentIntake.value, // Pass current intake here
                 onWaterIntake = { record ->
@@ -110,6 +125,9 @@ class HomeActivity : AppCompatActivity() {
 
                     // Update week progress in real-time
                     updateWeekProgress()
+
+                    // RESET THE TIMER WHEN NEW WATER INTAKE IS RECORDED
+                    resetTimer(nextSipTextView)
                 }
             )
         }
@@ -191,6 +209,18 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    private fun resetTimer(nextSipTextView: TextView) {
+        // Cancel the existing timer if it exists
+        timerTask?.cancel()
+        timer?.cancel()
+
+        // Cancel any existing notification since user drank water
+        notificationHelper.cancelWaterReminderNotification()
+
+        // Start a new timer
+        startNextSipCountdown(nextSipTextView)
+    }
+
     private fun updateStreakAndGoalPercentage() {
         // Calculate the streak of consecutive days with goal achieved
         val streak = calculateStreak()
@@ -199,7 +229,7 @@ class HomeActivity : AppCompatActivity() {
         streakTextView.text = "$streak"
 
         // Calculate the goal percentage based on the user's intake for the current day
-        val dailyGoal = 2150  // Goal amount per day (in ml)
+        val dailyGoal = userDailyGoal.value  // Use user's actual daily goal
 
         // If the user hasn't met the goal yet, calculate the percentage
         val goalPercentage = if (currentIntake.value > 0) {
@@ -247,6 +277,7 @@ class HomeActivity : AppCompatActivity() {
 
         println("=== PROGRESS CALCULATION DEBUG ===")
         println("Today index: $todayIndex")
+        println("User daily goal: ${userDailyGoal.value}")
 
         // Calculate progress for each day of the current week
         for (dayOffset in 0..6) {
@@ -262,16 +293,16 @@ class HomeActivity : AppCompatActivity() {
             // Calculate total intake for the day
             val totalIntakeForDay = waterIntakes.sumOf { it.amount }
 
-            // Calculate progress percentage (daily goal is 2150 ml)
+            // Calculate progress percentage using user's actual daily goal
             val progress = if (totalIntakeForDay > 0) {
-                ((totalIntakeForDay.toFloat() / 2150) * 100).toInt().coerceIn(0, 100)
+                ((totalIntakeForDay.toFloat() / userDailyGoal.value) * 100).toInt().coerceIn(0, 100)
             } else {
                 0 // 0 means no intake, -1 means no data (which we don't use here)
             }
 
             progressArray[dayIndex] = progress
 
-            println("Day offset: $dayOffset, Day index: $dayIndex, Date: $date, Progress: $progress")
+            println("Day offset: $dayOffset, Day index: $dayIndex, Date: $date, Intake: $totalIntakeForDay, Progress: $progress")
         }
 
         println("Final progress array: ${progressArray.contentToString()}")
@@ -432,6 +463,42 @@ class HomeActivity : AppCompatActivity() {
         return SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
     }
 
+    private fun startNextSipCountdown(nextSipTextView: TextView) {
+        // Get the user's notification frequency from settings
+        val notificationFrequency = getUserNotificationFrequency()
+
+        // Create a new timer and task
+        timer = Timer()
+        timerTask = object : TimerTask() {
+            var timeLeft = notificationFrequency
+
+            override fun run() {
+                runOnUiThread {
+                    nextSipTextView.text = "$timeLeft Mins"
+                }
+
+                timeLeft--
+
+                if (timeLeft <= 0) {
+                    // Time's up! Show notification
+                    notificationHelper.showWaterReminderNotification()
+
+                    // Reset the timer
+                    timeLeft = notificationFrequency
+                }
+            }
+        }
+
+        // Schedule the timer to update every minute
+        timer?.scheduleAtFixedRate(timerTask, 0, 60000)  // 60000ms = 1 minute
+    }
+
+    private fun getUserNotificationFrequency(): Int {
+        val sharedPreferences = getSharedPreferences("AquaBuddyPrefs", Context.MODE_PRIVATE)
+        // Default to 30 minutes if no preference is set
+        return sharedPreferences.getInt("notification_frequency", 30)
+    }
+
     private fun logWaterIntake(record: WaterRecord) {
         val intake = WaterIntake(
             userId = userId,
@@ -441,5 +508,12 @@ class HomeActivity : AppCompatActivity() {
             createdAt = getCurrentDateTime()
         )
         dbHelper.logWaterIntake(intake)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Clean up timer when activity is destroyed
+        timerTask?.cancel()
+        timer?.cancel()
     }
 }

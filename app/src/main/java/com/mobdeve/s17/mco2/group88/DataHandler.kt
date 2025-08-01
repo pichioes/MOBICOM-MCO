@@ -10,7 +10,6 @@ import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.util.*
 
-// Updated User data class with security question fields
 data class User(
     val id: Long = 0,
     val name: String,
