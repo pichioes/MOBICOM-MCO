@@ -1,5 +1,4 @@
 package com.mobdeve.s17.mco2.group88
-
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -13,10 +12,11 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import android.content.res.ColorStateList
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlin.math.roundToInt
 
 class ProfileMainPage : AppCompatActivity() {
-
     private var isNotificationsEnabled = true
     private var notificationFrequencyMinutes = 30 // Default 30 minutes
 
@@ -30,8 +30,14 @@ class ProfileMainPage : AppCompatActivity() {
         // Load and display user's current goal
         loadAndDisplayGoal()
 
-        // Load notification settings
-        loadNotificationSettings()
+        // Load and display user's name
+        loadAndDisplayUserName()
+
+        // Load and display user's height and weight
+        loadAndDisplayHeightWeight()
+
+        // Load notification settings from database
+        loadNotificationSettingsFromDatabase()
 
         // Handling click for logout section
         val logoutLayer = findViewById<View>(R.id.logout_layer)
@@ -69,8 +75,17 @@ class ProfileMainPage : AppCompatActivity() {
         profileNotificationSwitch.isChecked = isNotificationsEnabled
         profileNotificationSwitch.setOnCheckedChangeListener { _, isChecked ->
             isNotificationsEnabled = isChecked
-            saveNotificationSettings()
+            saveNotificationSettingsToDatabase()
             updateWaterReminderService()
+
+            // Update the GlobalTimerManager with new settings
+            if (isChecked) {
+                // Restart timer with new frequency when enabled
+                GlobalTimerManager.onWaterIntakeRecorded(this)
+            } else {
+                // Complete reset when disabled
+                GlobalTimerManager.completeReset(this)
+            }
         }
 
         // Start the water reminder service if notifications are enabled
@@ -83,22 +98,127 @@ class ProfileMainPage : AppCompatActivity() {
         super.onResume()
         // Refresh the goal display when returning to this activity
         loadAndDisplayGoal()
-        // Reload notification settings
-        loadNotificationSettings()
+        // Refresh the user name display
+        loadAndDisplayUserName()
+        // Refresh the height and weight display
+        loadAndDisplayHeightWeight()
+        // Reload notification settings from database
+        loadNotificationSettingsFromDatabase()
     }
 
-    // Load notification settings from SharedPreferences
-    private fun loadNotificationSettings() {
+    // NEW: Load and display user's name from database
+    private fun loadAndDisplayUserName() {
+        val profileNameTextView = findViewById<TextView>(R.id.ProfileName)
         val sharedPreferences = getSharedPreferences("AquaBuddyPrefs", MODE_PRIVATE)
-        isNotificationsEnabled = sharedPreferences.getBoolean("notifications_enabled", true)
-        notificationFrequencyMinutes = sharedPreferences.getInt("notification_frequency", 30)
+        val userId = sharedPreferences.getLong("user_id", -1L)
+
+        if (userId != -1L) {
+            val dbHelper = AquaBuddyDatabaseHelper(this)
+            val user = dbHelper.getUserById(userId)
+            if (user != null && user.name.isNotEmpty()) {
+                profileNameTextView.text = user.name
+            } else {
+                profileNameTextView.text = "User" // Default value
+            }
+        } else {
+            profileNameTextView.text = "User" // Default value when not logged in
+        }
+    }
+
+    // NEW: Load and display user's height and weight from database
+    private fun loadAndDisplayHeightWeight() {
+        val heightTextView = findViewById<TextView>(R.id.height)
+        val weightTextView = findViewById<TextView>(R.id.weight)
+        val sharedPreferences = getSharedPreferences("AquaBuddyPrefs", MODE_PRIVATE)
+        val userId = sharedPreferences.getLong("user_id", -1L)
+
+        if (userId != -1L) {
+            val dbHelper = AquaBuddyDatabaseHelper(this)
+            val user = dbHelper.getUserById(userId)
+            if (user != null) {
+                // Display height with proper formatting
+                if (user.height > 0) {
+                    heightTextView.text = "${user.height.toInt()}cm"
+                } else {
+                    heightTextView.text = "-- cm" // Default when height not set
+                }
+
+                // Display weight with proper formatting
+                if (user.weight > 0) {
+                    weightTextView.text = "${user.weight.toInt()}kg"
+                } else {
+                    weightTextView.text = "-- kg" // Default when weight not set
+                }
+            } else {
+                // User not found, show defaults
+                heightTextView.text = "-- cm"
+                weightTextView.text = "-- kg"
+            }
+        } else {
+            // Not logged in, show defaults
+            heightTextView.text = "-- cm"
+            weightTextView.text = "-- kg"
+        }
+    }
+
+    // Load notification settings from database instead of SharedPreferences
+    private fun loadNotificationSettingsFromDatabase() {
+        val sharedPreferences = getSharedPreferences("AquaBuddyPrefs", MODE_PRIVATE)
+        val userId = sharedPreferences.getLong("user_id", -1L)
+
+        if (userId != -1L) {
+            val dbHelper = AquaBuddyDatabaseHelper(this)
+            val user = dbHelper.getUserById(userId)
+            if (user != null) {
+                // Load from database if available
+                isNotificationsEnabled = user.notificationsEnabled ?: true
+                notificationFrequencyMinutes = user.notificationFrequency ?: 30
+            } else {
+                // Fallback to default values
+                isNotificationsEnabled = true
+                notificationFrequencyMinutes = 30
+            }
+        } else {
+            // Not logged in, use defaults
+            isNotificationsEnabled = true
+            notificationFrequencyMinutes = 30
+        }
 
         // Update the profile switch
         findViewById<Switch>(R.id.switch1)?.isChecked = isNotificationsEnabled
+
+        // Also save to SharedPreferences for compatibility
+        saveNotificationSettingsToSharedPrefs()
     }
 
-    // Save notification settings to SharedPreferences
-    private fun saveNotificationSettings() {
+    // Save notification settings to database
+    private fun saveNotificationSettingsToDatabase() {
+        val sharedPreferences = getSharedPreferences("AquaBuddyPrefs", MODE_PRIVATE)
+        val userId = sharedPreferences.getLong("user_id", -1L)
+
+        if (userId != -1L) {
+            val dbHelper = AquaBuddyDatabaseHelper(this)
+            val user = dbHelper.getUserById(userId)
+            if (user != null) {
+                // Update the user's notification settings
+                val updatedUser = user.copy(
+                    notificationsEnabled = isNotificationsEnabled,
+                    notificationFrequency = notificationFrequencyMinutes,
+                    updatedAt = getCurrentDateTime()
+                )
+                val updateResult = dbHelper.updateUser(updatedUser)
+                if (updateResult > 0) {
+                    // Also save to SharedPreferences for quick access
+                    saveNotificationSettingsToSharedPrefs()
+                } else {
+                    Toast.makeText(this, "Failed to update notification settings", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    // Helper method to save to SharedPreferences (for compatibility)
+    private fun saveNotificationSettingsToSharedPrefs() {
         val sharedPreferences = getSharedPreferences("AquaBuddyPrefs", MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         editor.putBoolean("notifications_enabled", isNotificationsEnabled)
@@ -168,7 +288,6 @@ class ProfileMainPage : AppCompatActivity() {
         if (userId != -1L) {
             val dbHelper = AquaBuddyDatabaseHelper(this)
             val user = dbHelper.getUserById(userId)
-
             if (user != null) {
                 goalDisplayTextView.text = "${user.dailyWaterGoal}ml"
             } else {
@@ -198,51 +317,44 @@ class ProfileMainPage : AppCompatActivity() {
         return (adjustedIntake / 50).roundToInt() * 50
     }
 
-    // Get user data from SharedPreferences or Database
-    private fun getUserData(): Triple<Float, Float, String>? {
+    // Get user data from database (weight, height, sex)
+    private fun getUserDataFromDatabase(): Triple<Float, Float, String>? {
         val sharedPreferences = getSharedPreferences("AquaBuddyPrefs", MODE_PRIVATE)
-
-        // Try to get user ID from SharedPreferences
         val userId = sharedPreferences.getLong("user_id", -1L)
 
         if (userId != -1L) {
-            // Get user data from database
             val dbHelper = AquaBuddyDatabaseHelper(this)
             val user = dbHelper.getUserById(userId)
-
             return if (user != null && user.weight > 0 && user.height > 0) {
                 Triple(user.weight.toFloat(), user.height.toFloat(), user.sex)
             } else {
                 null
             }
         }
-
         return null
     }
 
-    // Show Goals popup with calculated water intake
+    // Show Goals popup with calculated water intake based on database values
     private fun showGoalsPopup() {
         val dialog = android.app.Dialog(this)
         val view = layoutInflater.inflate(R.layout.popup_goals, null)
-
         val subtitleTextView = view.findViewById<TextView>(R.id.popup_subtitle)
         val goalsInput = view.findViewById<EditText>(R.id.goals_input)
         val confirmBtn = view.findViewById<Button>(R.id.confirm_goals_button)
 
-        // Get user data and calculate suggested intake
-        val userData = getUserData()
+        // Get user data from database and calculate suggested intake
+        val userData = getUserDataFromDatabase()
         if (userData != null) {
             val (weight, height, sex) = userData
             val suggestedIntake = calculateWaterIntake(weight, height, sex)
 
             // Update the subtitle with calculated suggestion
-            subtitleTextView.text = "Suggested = $suggestedIntake ml"
-
+            subtitleTextView.text = "Based on your profile: Weight: ${weight.toInt()}kg, Height: ${height.toInt()}cm\nSuggested = $suggestedIntake ml"
             // Set the suggested value as hint or default value
             goalsInput.hint = "$suggestedIntake ml"
         } else {
             // If no user data available, show default message
-            subtitleTextView.text = "Suggested = Please update your profile"
+            subtitleTextView.text = "Please update your weight and height in profile settings for personalized recommendations"
             goalsInput.hint = "Enter ml"
         }
 
@@ -268,7 +380,6 @@ class ProfileMainPage : AppCompatActivity() {
             setDimAmount(0.5f)  // Dim the background
             setGravity(android.view.Gravity.CENTER)
         }
-
         dialog.setCancelable(true)
         dialog.show()
     }
@@ -281,16 +392,13 @@ class ProfileMainPage : AppCompatActivity() {
         if (userId != -1L) {
             val dbHelper = AquaBuddyDatabaseHelper(this)
             val user = dbHelper.getUserById(userId)
-
             if (user != null) {
                 // Update the user's daily water goal
                 val updatedUser = user.copy(
                     dailyWaterGoal = goal,
                     updatedAt = getCurrentDateTime()
                 )
-
                 val updateResult = dbHelper.updateUser(updatedUser)
-
                 if (updateResult > 0) {
                     // Also save to SharedPreferences for quick access
                     val editor = sharedPreferences.edit()
@@ -299,7 +407,6 @@ class ProfileMainPage : AppCompatActivity() {
 
                     // Refresh the goal display on the main page
                     loadAndDisplayGoal()
-
                     Toast.makeText(this, "Water goal updated: ${goal}ml", Toast.LENGTH_SHORT).show()
                 } else {
                     Toast.makeText(this, "Failed to update water goal", Toast.LENGTH_SHORT).show()
@@ -335,7 +442,6 @@ class ProfileMainPage : AppCompatActivity() {
 
         if (userId != -1L) {
             val dbHelper = AquaBuddyDatabaseHelper(this)
-
             // Attempt to delete the user from the database
             val deleteResult = dbHelper.deleteUser(userId)
 
@@ -345,6 +451,9 @@ class ProfileMainPage : AppCompatActivity() {
 
                 // Stop the water reminder service
                 WaterReminderServiceHelper.stopWaterReminderService(this)
+
+                // Complete reset of GlobalTimerManager
+                GlobalTimerManager.completeReset(this)
 
                 // Clear all SharedPreferences data
                 val editor = sharedPreferences.edit()
@@ -389,6 +498,9 @@ class ProfileMainPage : AppCompatActivity() {
         // Stop the water reminder service
         WaterReminderServiceHelper.stopWaterReminderService(this)
 
+        // Complete reset of GlobalTimerManager
+        GlobalTimerManager.completeReset(this)
+
         // Clear user data (e.g., SharedPreferences)
         val sharedPreferences = getSharedPreferences("AquaBuddyPrefs", MODE_PRIVATE)
         val editor = sharedPreferences.edit()
@@ -402,7 +514,7 @@ class ProfileMainPage : AppCompatActivity() {
         finish()  // Close the current activity to prevent returning back to it
     }
 
-    // Show Notifications Popup with enhanced functionality
+    // Show Notifications Popup with enhanced functionality and database saving
     private fun showNotificationsPopup() {
         val dialog = android.app.Dialog(this)
         val view = layoutInflater.inflate(R.layout.popup_notifications, null)
@@ -421,7 +533,7 @@ class ProfileMainPage : AppCompatActivity() {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         reminderSpinner.adapter = adapter
 
-        // Set spinner to current frequency
+        // Set spinner to current frequency (loaded from database)
         val currentSelection = when (notificationFrequencyMinutes) {
             1 -> 0
             5 -> 1
@@ -455,17 +567,29 @@ class ProfileMainPage : AppCompatActivity() {
             }
 
             // Update settings
+            val oldFrequency = notificationFrequencyMinutes
             isNotificationsEnabled = newNotificationsEnabled
             notificationFrequencyMinutes = selectedFrequency
 
-            // Save settings
-            saveNotificationSettings()
+            // Save settings to database
+            saveNotificationSettingsToDatabase()
 
             // Update profile switch
             findViewById<Switch>(R.id.switch1)?.isChecked = isNotificationsEnabled
 
             // Update the background service with new settings
             WaterReminderServiceHelper.updateServiceSettings(this)
+
+            // IMPORTANT: Update GlobalTimerManager with new frequency
+            if (isNotificationsEnabled) {
+                // If frequency changed or notifications were just enabled, restart timer
+                if (oldFrequency != selectedFrequency || !newNotificationsEnabled) {
+                    GlobalTimerManager.onWaterIntakeRecorded(this)
+                }
+            } else {
+                // If notifications disabled, complete reset of timer
+                GlobalTimerManager.completeReset(this)
+            }
 
             // Show confirmation message
             val statusMessage = if (isNotificationsEnabled) {
@@ -490,8 +614,12 @@ class ProfileMainPage : AppCompatActivity() {
             setDimAmount(0.5f)  // Dim the background
             setGravity(android.view.Gravity.CENTER)
         }
-
         dialog.setCancelable(true)
         dialog.show()
+    }
+
+    // Helper function to get current date and time
+    private fun getCurrentDateTime(): String {
+        return SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
     }
 }

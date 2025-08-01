@@ -20,7 +20,8 @@ data class User(
     val height: Double, // in cm
     val sex: String, // "male" or "female"
     val dailyWaterGoal: Int, // in ml
-    val notificationFrequency: Int, // in minutes
+    val notificationFrequency: Int?, // in minutes - nullable for backwards compatibility
+    val notificationsEnabled: Boolean?, // NEW: track if notifications are enabled - nullable for backwards compatibility
     val securityQuestion: String = "", // Security question
     val securityAnswerHash: String = "", // Now stores plain text security answer
     val createdAt: String = getCurrentDateTime(),
@@ -76,7 +77,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
 
     companion object {
         private const val DATABASE_NAME = "AquaBuddy.db"
-        private const val DATABASE_VERSION = 7 // Increment version to force upgrade
+        private const val DATABASE_VERSION = 8 // Increment version to add notifications_enabled column
 
         // Users table
         private const val TABLE_USERS = "users"
@@ -90,6 +91,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         private const val COLUMN_USER_SEX = "sex"
         private const val COLUMN_USER_DAILY_GOAL = "daily_water_goal"
         private const val COLUMN_USER_NOTIFICATION_FREQ = "notification_frequency"
+        private const val COLUMN_USER_NOTIFICATIONS_ENABLED = "notifications_enabled" // NEW COLUMN
         private const val COLUMN_USER_SECURITY_QUESTION = "security_question"
         private const val COLUMN_USER_SECURITY_ANSWER_HASH = "security_answer_hash"
         private const val COLUMN_USER_CREATED_AT = "created_at"
@@ -110,7 +112,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
     override fun onCreate(db: SQLiteDatabase) {
         Log.d("DatabaseHelper", "Creating database tables...")
 
-        // Create users table with security question fields
+        // Create users table with security question fields and notifications_enabled
         val createUsersTable = """
             CREATE TABLE $TABLE_USERS (
                 $COLUMN_USER_ID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -122,7 +124,8 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
                 $COLUMN_USER_HEIGHT REAL NOT NULL,
                 $COLUMN_USER_SEX TEXT NOT NULL,
                 $COLUMN_USER_DAILY_GOAL INTEGER NOT NULL,
-                $COLUMN_USER_NOTIFICATION_FREQ INTEGER DEFAULT 60,
+                $COLUMN_USER_NOTIFICATION_FREQ INTEGER DEFAULT 30,
+                $COLUMN_USER_NOTIFICATIONS_ENABLED INTEGER DEFAULT 1,
                 $COLUMN_USER_SECURITY_QUESTION TEXT NOT NULL DEFAULT '',
                 $COLUMN_USER_SECURITY_ANSWER_HASH TEXT NOT NULL DEFAULT '',
                 $COLUMN_USER_CREATED_AT TEXT NOT NULL,
@@ -231,6 +234,40 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
                 Log.e("DatabaseHelper", "Error in version 7 upgrade: ${e.message}", e)
             }
         }
+        if (oldVersion < 8) {
+            // Add notifications_enabled column
+            try {
+                db.execSQL("ALTER TABLE $TABLE_USERS ADD COLUMN $COLUMN_USER_NOTIFICATIONS_ENABLED INTEGER DEFAULT 1")
+                Log.d("DatabaseHelper", "Added notifications_enabled column")
+            } catch (e: Exception) {
+                Log.e("DatabaseHelper", "Error adding notifications_enabled column: ${e.message}", e)
+            }
+        }
+    }
+
+    // Helper function to check if notification columns exist
+    private fun checkNotificationColumnsExist(db: SQLiteDatabase): Boolean {
+        return try {
+            val cursor = db.rawQuery("PRAGMA table_info($TABLE_USERS)", null)
+            val columnNames = mutableSetOf<String>()
+
+            while (cursor.moveToNext()) {
+                val columnName = cursor.getString(cursor.getColumnIndexOrThrow("name"))
+                columnNames.add(columnName)
+            }
+            cursor.close()
+
+            val hasNotificationsEnabled = columnNames.contains(COLUMN_USER_NOTIFICATIONS_ENABLED)
+            val hasNotificationFreq = columnNames.contains(COLUMN_USER_NOTIFICATION_FREQ)
+
+            Log.d("DatabaseHelper", "Notifications enabled column exists: $hasNotificationsEnabled")
+            Log.d("DatabaseHelper", "Notification frequency column exists: $hasNotificationFreq")
+
+            hasNotificationsEnabled && hasNotificationFreq
+        } catch (e: Exception) {
+            Log.e("DatabaseHelper", "Error checking notification column existence: ${e.message}", e)
+            false
+        }
     }
 
     // Helper function to check if security columns exist
@@ -275,6 +312,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
 
             // Check if security columns exist
             val securityColumnsExist = checkSecurityColumnsExist(db)
+            val notificationColumnsExist = checkNotificationColumnsExist(db)
 
             val values = ContentValues().apply {
                 put(COLUMN_USER_NAME, user.name.trim())
@@ -285,11 +323,16 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
                 put(COLUMN_USER_HEIGHT, user.height)
                 put(COLUMN_USER_SEX, user.sex.lowercase())
                 put(COLUMN_USER_DAILY_GOAL, user.dailyWaterGoal)
-                put(COLUMN_USER_NOTIFICATION_FREQ, user.notificationFrequency)
                 put(COLUMN_USER_CREATED_AT, user.createdAt)
                 put(COLUMN_USER_UPDATED_AT, user.updatedAt)
                 put(COLUMN_USER_GOOGLE_ID, user.googleId)
                 put(COLUMN_USER_FACEBOOK_ID, user.facebookId)
+
+                // Add notification settings if columns exist
+                if (notificationColumnsExist) {
+                    put(COLUMN_USER_NOTIFICATION_FREQ, user.notificationFrequency ?: 30)
+                    put(COLUMN_USER_NOTIFICATIONS_ENABLED, if (user.notificationsEnabled == true) 1 else 0)
+                }
 
                 // Only add security columns if they exist in the database
                 if (securityColumnsExist) {
@@ -310,9 +353,12 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
             Log.d("DatabaseHelper", "- Height: ${user.height}")
             Log.d("DatabaseHelper", "- Sex: '${user.sex}'")
             Log.d("DatabaseHelper", "- Daily Goal: ${user.dailyWaterGoal}")
+            Log.d("DatabaseHelper", "- Notifications Enabled: ${user.notificationsEnabled}")
+            Log.d("DatabaseHelper", "- Notification Frequency: ${user.notificationFrequency}")
             Log.d("DatabaseHelper", "- Security Question: '${user.securityQuestion}'")
             Log.d("DatabaseHelper", "- Has Security Answer: ${user.securityAnswerHash.isNotEmpty()}")
             Log.d("DatabaseHelper", "- Security columns exist: $securityColumnsExist")
+            Log.d("DatabaseHelper", "- Notification columns exist: $notificationColumnsExist")
 
             val result = db.insert(TABLE_USERS, null, values)
 
@@ -380,7 +426,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         }
     }
 
-    // Create Google Users (updated to include empty security fields)
+    // Create Google Users (updated to include notification settings)
     fun createGoogleUser(name: String, email: String, googleId: String): Long {
         if (name.isBlank() || email.isBlank() || googleId.isBlank()) {
             Log.e("DatabaseHelper", "Cannot create Google user: missing required fields")
@@ -397,7 +443,8 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
             put(COLUMN_USER_HEIGHT, 0.0)
             put(COLUMN_USER_SEX, "not_specified")
             put(COLUMN_USER_DAILY_GOAL, 2150) // Reasonable default
-            put(COLUMN_USER_NOTIFICATION_FREQ, 60)
+            put(COLUMN_USER_NOTIFICATION_FREQ, 30) // Default 30 minutes
+            put(COLUMN_USER_NOTIFICATIONS_ENABLED, 1) // Default enabled
             put(COLUMN_USER_SECURITY_QUESTION, "") // Empty for social login users
             put(COLUMN_USER_SECURITY_ANSWER_HASH, "") // Empty for social login users
             put(COLUMN_USER_CREATED_AT, getCurrentDateTime())
@@ -408,7 +455,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         return db.insert(TABLE_USERS, null, values)
     }
 
-    // Create Facebook Users (updated to include empty security fields)
+    // Create Facebook Users (updated to include notification settings)
     fun createFacebookUser(name: String, email: String, facebookId: String): Long {
         if (name.isBlank() || email.isBlank() || facebookId.isBlank()) {
             Log.e("DatabaseHelper", "Cannot create Facebook user: missing required fields")
@@ -425,7 +472,8 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
             put(COLUMN_USER_HEIGHT, 0.0)
             put(COLUMN_USER_SEX, "not_specified")
             put(COLUMN_USER_DAILY_GOAL, 2150) // Reasonable default
-            put(COLUMN_USER_NOTIFICATION_FREQ, 60)
+            put(COLUMN_USER_NOTIFICATION_FREQ, 30) // Default 30 minutes
+            put(COLUMN_USER_NOTIFICATIONS_ENABLED, 1) // Default enabled
             put(COLUMN_USER_SECURITY_QUESTION, "") // Empty for social login users
             put(COLUMN_USER_SECURITY_ANSWER_HASH, "") // Empty for social login users
             put(COLUMN_USER_CREATED_AT, getCurrentDateTime())
@@ -562,7 +610,8 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
             put(COLUMN_USER_HEIGHT, user.height)
             put(COLUMN_USER_SEX, user.sex.lowercase())
             put(COLUMN_USER_DAILY_GOAL, user.dailyWaterGoal)
-            put(COLUMN_USER_NOTIFICATION_FREQ, user.notificationFrequency)
+            put(COLUMN_USER_NOTIFICATION_FREQ, user.notificationFrequency ?: 30)
+            put(COLUMN_USER_NOTIFICATIONS_ENABLED, if (user.notificationsEnabled == true) 1 else 0)
             put(COLUMN_USER_SECURITY_QUESTION, user.securityQuestion)
             put(COLUMN_USER_SECURITY_ANSWER_HASH, user.securityAnswerHash)
             put(COLUMN_USER_UPDATED_AT, getCurrentDateTime())
@@ -771,7 +820,8 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
             height = cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_USER_HEIGHT)),
             sex = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_SEX)),
             dailyWaterGoal = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_USER_DAILY_GOAL)),
-            notificationFrequency = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_USER_NOTIFICATION_FREQ)),
+            notificationFrequency = getColumnIntValueOrNull(cursor, COLUMN_USER_NOTIFICATION_FREQ),
+            notificationsEnabled = getColumnIntValueOrNull(cursor, COLUMN_USER_NOTIFICATIONS_ENABLED)?.let { it == 1 },
             securityQuestion = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_SECURITY_QUESTION)) ?: "",
             securityAnswerHash = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_SECURITY_ANSWER_HASH)) ?: "",
             createdAt = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_CREATED_AT)),
@@ -779,6 +829,36 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
             googleId = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_GOOGLE_ID)),
             facebookId = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USER_FACEBOOK_ID))
         )
+    }
+
+    // Helper function to safely get column values that might not exist (for strings)
+    private fun getColumnValueOrNull(cursor: Cursor, columnName: String): String? {
+        return try {
+            val columnIndex = cursor.getColumnIndex(columnName)
+            if (columnIndex != -1) {
+                cursor.getString(columnIndex)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.w("DatabaseHelper", "Column $columnName not found: ${e.message}")
+            null
+        }
+    }
+
+    // Helper function to safely get integer column values that might not exist
+    private fun getColumnIntValueOrNull(cursor: Cursor, columnName: String): Int? {
+        return try {
+            val columnIndex = cursor.getColumnIndex(columnName)
+            if (columnIndex != -1) {
+                cursor.getInt(columnIndex)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.w("DatabaseHelper", "Column $columnName not found: ${e.message}")
+            null
+        }
     }
 
     private fun cursorToWaterIntake(cursor: Cursor): WaterIntake {
@@ -806,7 +886,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         return dailyIntake >= user.dailyWaterGoal
     }
 
-    // ADD THIS METHOD HERE - INSIDE THE CLASS
+    // Function to get consecutive goal achievement streak
     fun getConsecutiveGoalAchievementStreak(userId: Long): Int {
         val user = getUserById(userId) ?: return 0
         val dailyGoal = user.dailyWaterGoal

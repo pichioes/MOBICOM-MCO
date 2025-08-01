@@ -136,6 +136,7 @@ class CreateProfileActivity : AppCompatActivity() {
                 sex = selectedGender.lowercase(), // Normalize to lowercase
                 dailyWaterGoal = recommendedWaterIntake, // This is in ml as expected by the database
                 notificationFrequency = 60, // Default value in minutes
+                notificationsEnabled = true, // Default to enabled notifications
                 securityQuestion = securityQuestion,
                 securityAnswerHash = securityAnswerPlain // Store plain text instead of hash
             )

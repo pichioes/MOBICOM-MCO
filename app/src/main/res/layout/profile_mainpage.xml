@@ -48,7 +48,7 @@
                         android:src="@drawable/profile_pic" />
 
                     <TextView
-                        android:id="@+id/textView10"
+                        android:id="@+id/ProfileName"
                         android:layout_width="116dp"
                         android:layout_height="51dp"
                         android:layout_gravity="center_horizontal"
@@ -69,7 +69,7 @@
                 android:paddingTop="15dp">
 
                 <TextView
-                    android:id="@+id/textView6"
+                    android:id="@+id/weighttitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/outfit"
@@ -77,7 +77,7 @@
                     android:textColor="@color/textcolor" />
 
                 <TextView
-                    android:id="@+id/textView5"
+                    android:id="@+id/weight"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
@@ -95,7 +95,7 @@
                     android:paddingTop="15dp" />
 
                 <TextView
-                    android:id="@+id/textView3"
+                    android:id="@+id/height"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
