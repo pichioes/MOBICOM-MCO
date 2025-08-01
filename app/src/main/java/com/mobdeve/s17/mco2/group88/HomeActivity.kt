@@ -1,28 +1,26 @@
 package com.mobdeve.s17.mco2.group88
 
-import android.os.Bundle
-import android.widget.*
+import android.Manifest
 import android.app.Dialog
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.os.Build
+import android.os.Bundle
+import android.widget.*
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.ComposeView
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.annotation.RequiresApi
-import androidx.core.content.ContextCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import java.text.SimpleDateFormat
-import java.util.*
-import android.content.Intent
-import androidx.compose.ui.tooling.preview.Preview
 import java.time.LocalDate
-import android.Manifest
-import android.content.pm.PackageManager
-import androidx.core.app.ActivityCompat
-
+import java.util.*
 
 class HomeActivity : AppCompatActivity() {
 
@@ -42,9 +40,6 @@ class HomeActivity : AppCompatActivity() {
     private var weekProgress = mutableStateOf(Array(7) { -1 })
     // Add mutable state for user's daily goal
     private var userDailyGoal = mutableStateOf(2150)
-
-    private var timer: Timer? = null
-    private var timerTask: TimerTask? = null
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -95,8 +90,8 @@ class HomeActivity : AppCompatActivity() {
             showPopup()
         }
 
-        // Set up notification countdown
-        startNextSipCountdown(nextSipTextView)
+        // Initialize global timer with this activity's TextView
+        GlobalTimerManager.initialize(this, nextSipTextView, notificationHelper)
 
         val weekBarComposeView = findViewById<ComposeView>(R.id.WeekBar)
         weekBarComposeView.setContent {
@@ -126,8 +121,8 @@ class HomeActivity : AppCompatActivity() {
                     // Update week progress in real-time
                     updateWeekProgress()
 
-                    // RESET THE TIMER WHEN NEW WATER INTAKE IS RECORDED
-                    resetTimer(nextSipTextView)
+                    // ONLY reset the timer when actual water intake is recorded
+                    GlobalTimerManager.onWaterIntakeRecorded(this@HomeActivity)
                 }
             )
         }
@@ -207,18 +202,6 @@ class HomeActivity : AppCompatActivity() {
         } catch (e: Exception) {
             return 0 // Return 0 if parsing fails
         }
-    }
-
-    private fun resetTimer(nextSipTextView: TextView) {
-        // Cancel the existing timer if it exists
-        timerTask?.cancel()
-        timer?.cancel()
-
-        // Cancel any existing notification since user drank water
-        notificationHelper.cancelWaterReminderNotification()
-
-        // Start a new timer
-        startNextSipCountdown(nextSipTextView)
     }
 
     private fun updateStreakAndGoalPercentage() {
@@ -463,42 +446,6 @@ class HomeActivity : AppCompatActivity() {
         return SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
     }
 
-    private fun startNextSipCountdown(nextSipTextView: TextView) {
-        // Get the user's notification frequency from settings
-        val notificationFrequency = getUserNotificationFrequency()
-
-        // Create a new timer and task
-        timer = Timer()
-        timerTask = object : TimerTask() {
-            var timeLeft = notificationFrequency
-
-            override fun run() {
-                runOnUiThread {
-                    nextSipTextView.text = "$timeLeft Mins"
-                }
-
-                timeLeft--
-
-                if (timeLeft <= 0) {
-                    // Time's up! Show notification
-                    notificationHelper.showWaterReminderNotification()
-
-                    // Reset the timer
-                    timeLeft = notificationFrequency
-                }
-            }
-        }
-
-        // Schedule the timer to update every minute
-        timer?.scheduleAtFixedRate(timerTask, 0, 60000)  // 60000ms = 1 minute
-    }
-
-    private fun getUserNotificationFrequency(): Int {
-        val sharedPreferences = getSharedPreferences("AquaBuddyPrefs", Context.MODE_PRIVATE)
-        // Default to 30 minutes if no preference is set
-        return sharedPreferences.getInt("notification_frequency", 30)
-    }
-
     private fun logWaterIntake(record: WaterRecord) {
         val intake = WaterIntake(
             userId = userId,
@@ -510,10 +457,23 @@ class HomeActivity : AppCompatActivity() {
         dbHelper.logWaterIntake(intake)
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Just update the TextView reference and refresh display - don't reset timer
+        GlobalTimerManager.updateTextView(nextSipTextView)
+        GlobalTimerManager.updateTimerDisplay(this)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Don't stop or reset the timer - let it continue in background
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-        // Clean up timer when activity is destroyed
-        timerTask?.cancel()
-        timer?.cancel()
+        // Only cleanup references when activity is destroyed, but keep timer state
+        if (isFinishing && !isChangingConfigurations) {
+            GlobalTimerManager.cleanup()
+        }
     }
 }
