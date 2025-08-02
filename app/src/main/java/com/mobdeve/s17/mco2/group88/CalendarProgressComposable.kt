@@ -22,8 +22,8 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun CalendarProgressComposable(
     records: List<WaterRecord>,
-    goalAmount: Int = 2150,
-    selectedDate: String? = null  // Add selectedDate parameter
+    goalAmount: Int,
+    selectedDate: String? = null
 ) {
     val strokeWidthDp = 23.dp
     val sizeDp = 180.dp
@@ -32,7 +32,7 @@ fun CalendarProgressComposable(
     // Use selectedDate if provided, otherwise use today's date
     val targetDate = selectedDate ?: LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
-    // Sum up all water records for the target date
+    // Sum up all water records for the selectedDate
     val currentIntake = records
         .filter { it.time == targetDate }
         .sumOf { it.amount?.toDouble() ?: 0.0 }

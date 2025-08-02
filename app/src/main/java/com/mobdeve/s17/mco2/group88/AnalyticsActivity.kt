@@ -25,6 +25,7 @@ class AnalyticsActivity : AppCompatActivity() {
     private lateinit var dbHelper: AquaBuddyDatabaseHelper
     private lateinit var sharedPreferences: SharedPreferences
     private var currentUserId: Long = -1L
+    private var userDailyGoal: Int = 2150
 
     private val waterRecords = mutableListOf<WaterRecord>()
     private var selectedDateString: String? = null
@@ -36,7 +37,7 @@ class AnalyticsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_analytics)
 
-        // Initialize database helper and shared preferences
+        // Initialize db helper and shared preferences
         initializeDatabase()
 
         // Check if user is logged in and get user ID
@@ -45,7 +46,7 @@ class AnalyticsActivity : AppCompatActivity() {
             return
         }
 
-        // Load water records from database
+        fetchUserDailyGoal()
         loadWaterRecordsFromDatabase()
 
         setupCalendarView()
@@ -66,6 +67,12 @@ class AnalyticsActivity : AppCompatActivity() {
         return isLoggedIn && currentUserId != -1L
     }
 
+    // Fetch user's set daily goal
+    private fun fetchUserDailyGoal() {
+        val user = dbHelper.getUserById(currentUserId)
+        userDailyGoal = user?.dailyWaterGoal ?: 2150
+    }
+
     private fun redirectToLogin() {
         Toast.makeText(this, "Please log in to view analytics", Toast.LENGTH_SHORT).show()
         val intent = Intent(this, LoginActivity::class.java)
@@ -78,10 +85,8 @@ class AnalyticsActivity : AppCompatActivity() {
     private fun loadWaterRecordsFromDatabase() {
         Thread {
             try {
-                // Get last 30 days summary from database
                 val dailySummaries = dbHelper.getLast30DaysSummary(currentUserId)
 
-                // Convert DailyIntakeSummary to WaterRecord format
                 val records = dailySummaries.map { summary ->
                     WaterRecord(summary.date, summary.totalIntake.toString())
                 }
@@ -90,7 +95,6 @@ class AnalyticsActivity : AppCompatActivity() {
                     waterRecords.clear()
                     waterRecords.addAll(records)
 
-                    // Refresh UI components after loading data
                     refreshUIWithNewData()
                 }
             } catch (e: Exception) {
@@ -103,18 +107,15 @@ class AnalyticsActivity : AppCompatActivity() {
         }.start()
     }
 
+    // Update calendar composables and water report
     @RequiresApi(Build.VERSION_CODES.O)
     private fun refreshUIWithNewData() {
-        // Update calendar decorators
         val calendarView = findViewById<MaterialCalendarView>(R.id.calendarView)
         calendarView.removeDecorators()
-        val waterProgressDecorator = WaterProgressDecoratorWithDate(this, waterRecords)
+        val waterProgressDecorator = WaterProgressDecoratorWithDate(this, waterRecords, goalAmount = userDailyGoal)
         calendarView.addDecorator(waterProgressDecorator)
 
-        // Update water report with new data
         updateWaterReport()
-
-        // Update calendar progress
         setupCalendarProgress()
     }
 
@@ -164,8 +165,8 @@ class AnalyticsActivity : AppCompatActivity() {
         calendarView.setSelectedDate(CalendarDay.today())
         selectedDateString = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
-        // Add the water progress decorator
-        val waterProgressDecorator = WaterProgressDecoratorWithDate(this, waterRecords)
+        // Add the water progress composable
+        val waterProgressDecorator = WaterProgressDecoratorWithDate(this, waterRecords, goalAmount = userDailyGoal)
         calendarView.addDecorator(waterProgressDecorator)
 
         calendarView.setOnDateChangedListener { widget, date, selected ->
@@ -174,13 +175,12 @@ class AnalyticsActivity : AppCompatActivity() {
             updateCalendarProgressForDate(date)
         }
 
-        // Track month changes to update decorator
+        // Track month changes to update composable decorator
         calendarView.setOnMonthChangedListener { widget, date ->
             currentDisplayedMonth = date.month
             currentDisplayedYear = date.year
-            // Update the decorator with new month/year info
             calendarView.removeDecorators()
-            val updatedDecorator = WaterProgressDecoratorWithDate(this, waterRecords, currentDisplayedYear, currentDisplayedMonth)
+            val updatedDecorator = WaterProgressDecoratorWithDate(this, waterRecords, currentDisplayedYear, currentDisplayedMonth, userDailyGoal)
             calendarView.addDecorator(updatedDecorator)
         }
     }
@@ -214,21 +214,20 @@ class AnalyticsActivity : AppCompatActivity() {
                     result[month] += record?.amount?.toFloat() ?: 0f
                 }
             } catch (e: Exception) {
-                // Handle parsing errors
             }
         }
 
         return result
     }
 
-    // Add this method to get individual intake records for frequency calculation
+    // Method to get individual intake records
     @RequiresApi(Build.VERSION_CODES.O)
     private fun getWeeklyIntakeFrequency(): Double {
         return try {
             val now = LocalDate.now()
             val weekAgo = now.minusDays(6)
 
-            // Get individual intake records for the last 7 days, not daily summaries
+            // Get individual intake records for the last 7 days
             val weeklyIntakeRecords = dbHelper.getIntakeRecordsBetweenDates(
                 currentUserId,
                 weekAgo.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
@@ -247,7 +246,7 @@ class AnalyticsActivity : AppCompatActivity() {
         }
     }
 
-    // Modified updateWaterReport method
+    // Method to use user's actual daily goal
     @RequiresApi(Build.VERSION_CODES.O)
     private fun updateWaterReport() {
         Thread {
@@ -275,9 +274,8 @@ class AnalyticsActivity : AppCompatActivity() {
                     }
                 }
 
-                // Get user's daily goal from database
-                val user = dbHelper.getUserById(currentUserId)
-                val dailyGoal = user?.dailyWaterGoal?.toDouble() ?: 2000.0
+                // Fetched user's daily goal
+                val dailyGoal = userDailyGoal.toDouble()
 
                 val weeklyAvg = if (weeklyEntries.isNotEmpty()) {
                     weeklyEntries.sumOf { it.amount?.toDouble() ?: 0.0 } / 7
@@ -291,7 +289,6 @@ class AnalyticsActivity : AppCompatActivity() {
                     (weeklyEntries.count { (it.amount?.toDouble() ?: 0.0) >= dailyGoal } / 7.0) * 100
                 } else 0.0
 
-                // FIXED: Get actual intake frequency instead of daily summary count
                 val frequency = getWeeklyIntakeFrequency()
 
                 runOnUiThread {
@@ -325,7 +322,6 @@ class AnalyticsActivity : AppCompatActivity() {
             calendarLayout.findViewById<TextView>(R.id.completionTv)?.text = completionText
             calendarLayout.findViewById<TextView>(R.id.frequencyTv)?.text = frequencyText
         } catch (e: Exception) {
-            // Handle if views not found
         }
     }
 
@@ -334,6 +330,7 @@ class AnalyticsActivity : AppCompatActivity() {
         calendarProgressComposeView.setContent {
             CalendarProgressComposable(
                 records = waterRecords,
+                goalAmount = userDailyGoal,
                 selectedDate = selectedDateString
             )
         }
@@ -348,21 +345,24 @@ class AnalyticsActivity : AppCompatActivity() {
         calendarProgressComposeView.setContent {
             CalendarProgressComposable(
                 records = waterRecords,
+                goalAmount = userDailyGoal,
                 selectedDate = dateString
             )
         }
     }
 
-    // Method to refresh data (call this when returning from other activities)
+    // Refresh data when user's goal is updated
     @RequiresApi(Build.VERSION_CODES.O)
     private fun refreshData() {
+        // Refresh user's daily goal when updated
+        fetchUserDailyGoal()
         loadWaterRecordsFromDatabase()
     }
 
+    // Refresh data when returning to analytics
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onResume() {
         super.onResume()
-        // Refresh data when returning to this activity
         if (currentUserId != -1L) {
             refreshData()
         }
