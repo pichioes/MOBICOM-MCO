@@ -67,7 +67,7 @@ class WaterProgressSpanWithDate(
         lineNumber: Int
     ) {
         try {
-            // Calculate progress for this date
+            // Calculate progress for chosen date
             val progress = getProgressForDate(text.toString())
 
             // Calculate circle dimensions

@@ -20,20 +20,20 @@ data class User(
     val height: Double, // in cm
     val sex: String, // "male" or "female"
     val dailyWaterGoal: Int, // in ml
-    val notificationFrequency: Int?, // in minutes - nullable for backwards compatibility
-    val notificationsEnabled: Boolean?, // NEW: track if notifications are enabled - nullable for backwards compatibility
-    val securityQuestion: String = "", // Security question
-    val securityAnswerHash: String = "", // Now stores plain text security answer
+    val notificationFrequency: Int?, // in minutes
+    val notificationsEnabled: Boolean?, // track if notifications are enabled
+    val securityQuestion: String = "",
+    val securityAnswerHash: String = "",
     val createdAt: String = getCurrentDateTime(),
     val updatedAt: String = getCurrentDateTime(),
-    val googleId: String? = null, // for google
+    val googleId: String? = null,
     val facebookId: String? = null
 )
 
 data class WaterIntake(
     val id: Long = 0,
     val userId: Long,
-    val amount: Int, // in ml
+    val amount: Int,
     val date: String, // YYYY-MM-DD format
     val time: String, // HH:mm:ss format
     val createdAt: String = getCurrentDateTime()
@@ -51,17 +51,13 @@ fun getCurrentDateTime(): String {
     return sdf.format(Date())
 }
 
+// Helper function to get current date
 fun getCurrentDate(): String {
     val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
     return sdf.format(Date())
 }
 
-fun getCurrentTime(): String {
-    val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-    return sdf.format(Date())
-}
-
-// Password hashing utility (keep this for passwords)
+// Password hashing
 fun hashPassword(password: String): String {
     val bytes = password.toByteArray()
     val md = MessageDigest.getInstance("SHA-256")
@@ -112,7 +108,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
     override fun onCreate(db: SQLiteDatabase) {
         Log.d("DatabaseHelper", "Creating database tables...")
 
-        // Create users table with security question fields and notifications_enabled
+        // Create users table
         val createUsersTable = """
             CREATE TABLE $TABLE_USERS (
                 $COLUMN_USER_ID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -152,7 +148,6 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
             db.execSQL(createUsersTable)
             db.execSQL(createWaterIntakeTable)
 
-            // Create indexes for better performance
             db.execSQL("CREATE INDEX idx_water_intake_user_date ON $TABLE_WATER_INTAKE($COLUMN_INTAKE_USER_ID, $COLUMN_INTAKE_DATE)")
             db.execSQL("CREATE INDEX idx_users_email ON $TABLE_USERS($COLUMN_USER_EMAIL)")
 
@@ -166,7 +161,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         Log.d("DatabaseHelper", "Upgrading database from version $oldVersion to $newVersion")
 
         if (oldVersion < 2) {
-            // Add password column to existing users table
+            // CHANGES: Add password column to existing users table
             try {
                 db.execSQL("ALTER TABLE $TABLE_USERS ADD COLUMN $COLUMN_USER_PASSWORD_HASH TEXT DEFAULT ''")
                 Log.d("DatabaseHelper", "Added password_hash column")
@@ -175,7 +170,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
             }
         }
         if (oldVersion < 3) {
-            // Add google_id column
+            // CHANGES: Add google_id column
             try {
                 db.execSQL("ALTER TABLE $TABLE_USERS ADD COLUMN $COLUMN_USER_GOOGLE_ID TEXT")
                 Log.d("DatabaseHelper", "Added google_id column")
@@ -184,7 +179,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
             }
         }
         if (oldVersion < 4) {
-            // Add facebook_id column
+            // CHANGES: Add facebook_id column
             try {
                 db.execSQL("ALTER TABLE $TABLE_USERS ADD COLUMN $COLUMN_USER_FACEBOOK_ID TEXT")
                 Log.d("DatabaseHelper", "Added facebook_id column")
@@ -193,7 +188,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
             }
         }
         if (oldVersion < 5) {
-            // Add security question and answer columns
+            // CHANGES: Add security question and answer columns
             try {
                 db.execSQL("ALTER TABLE $TABLE_USERS ADD COLUMN $COLUMN_USER_SECURITY_QUESTION TEXT DEFAULT ''")
                 db.execSQL("ALTER TABLE $TABLE_USERS ADD COLUMN $COLUMN_USER_SECURITY_ANSWER_HASH TEXT DEFAULT ''")
@@ -203,11 +198,11 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
             }
         }
         if (oldVersion < 6) {
-            // Version 6 - just for better error handling, no schema changes
+            // CHANGES: Better error handling. no schema changes
             Log.d("DatabaseHelper", "Upgraded to version 6 for improved error handling")
         }
         if (oldVersion < 7) {
-            // Ensure security columns exist (safety check)
+            // CHANGES: Ensure security columns exist
             try {
                 // Check if columns exist, if not add them
                 val cursor = db.rawQuery("PRAGMA table_info($TABLE_USERS)", null)
@@ -235,7 +230,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
             }
         }
         if (oldVersion < 8) {
-            // Add notifications_enabled column
+            // CHANGES: Add notifications_enabled column
             try {
                 db.execSQL("ALTER TABLE $TABLE_USERS ADD COLUMN $COLUMN_USER_NOTIFICATIONS_ENABLED INTEGER DEFAULT 1")
                 Log.d("DatabaseHelper", "Added notifications_enabled column")
@@ -245,7 +240,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         }
     }
 
-    // Helper function to check if notification columns exist
+    // Function to check if notification columns exist
     private fun checkNotificationColumnsExist(db: SQLiteDatabase): Boolean {
         return try {
             val cursor = db.rawQuery("PRAGMA table_info($TABLE_USERS)", null)
@@ -270,7 +265,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         }
     }
 
-    // Helper function to check if security columns exist
+    // Function to check if security columns exist
     private fun checkSecurityColumnsExist(db: SQLiteDatabase): Boolean {
         return try {
             val cursor = db.rawQuery("PRAGMA table_info($TABLE_USERS)", null)
@@ -295,7 +290,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         }
     }
 
-    // Enhanced User management functions with better error handling
+    // User management functions
     fun insertUser(user: User): Long {
         val db = this.writableDatabase
 
@@ -328,13 +323,13 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
                 put(COLUMN_USER_GOOGLE_ID, user.googleId)
                 put(COLUMN_USER_FACEBOOK_ID, user.facebookId)
 
-                // Add notification settings if columns exist
+                // Add notification settings ONLY IF columns exist
                 if (notificationColumnsExist) {
                     put(COLUMN_USER_NOTIFICATION_FREQ, user.notificationFrequency ?: 30)
                     put(COLUMN_USER_NOTIFICATIONS_ENABLED, if (user.notificationsEnabled == true) 1 else 0)
                 }
 
-                // Only add security columns if they exist in the database
+                // Add security columns ONLY IF they exist in the database
                 if (securityColumnsExist) {
                     put(COLUMN_USER_SECURITY_QUESTION, user.securityQuestion)
                     put(COLUMN_USER_SECURITY_ANSWER_HASH, user.securityAnswerHash)
@@ -365,7 +360,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
             if (result == -1L) {
                 Log.e("DatabaseHelper", "Insert failed - db.insert returned -1")
 
-                // Check if it's a constraint violation (duplicate email)
+                // Check if it's a duplicate email
                 val existingUser = getUserByEmail(user.email)
                 if (existingUser != null) {
                     Log.e("DatabaseHelper", "Insert failed due to duplicate email: ${user.email}")
@@ -426,7 +421,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         }
     }
 
-    // Create Google Users (updated to include notification settings)
+    // Create Google Users
     fun createGoogleUser(name: String, email: String, googleId: String): Long {
         if (name.isBlank() || email.isBlank() || googleId.isBlank()) {
             Log.e("DatabaseHelper", "Cannot create Google user: missing required fields")
@@ -437,16 +432,16 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         val values = ContentValues().apply {
             put(COLUMN_USER_NAME, name.trim())
             put(COLUMN_USER_EMAIL, email.trim().lowercase())
-            put(COLUMN_USER_PASSWORD_HASH, "") // Empty for Google users
-            put(COLUMN_USER_AGE, 0) // Use 0 to indicate not set
+            put(COLUMN_USER_PASSWORD_HASH, "")
+            put(COLUMN_USER_AGE, 0)
             put(COLUMN_USER_WEIGHT, 0.0)
             put(COLUMN_USER_HEIGHT, 0.0)
             put(COLUMN_USER_SEX, "not_specified")
-            put(COLUMN_USER_DAILY_GOAL, 2150) // Reasonable default
-            put(COLUMN_USER_NOTIFICATION_FREQ, 30) // Default 30 minutes
-            put(COLUMN_USER_NOTIFICATIONS_ENABLED, 1) // Default enabled
-            put(COLUMN_USER_SECURITY_QUESTION, "") // Empty for social login users
-            put(COLUMN_USER_SECURITY_ANSWER_HASH, "") // Empty for social login users
+            put(COLUMN_USER_DAILY_GOAL, 2150)
+            put(COLUMN_USER_NOTIFICATION_FREQ, 30)
+            put(COLUMN_USER_NOTIFICATIONS_ENABLED, 1)
+            put(COLUMN_USER_SECURITY_QUESTION, "")
+            put(COLUMN_USER_SECURITY_ANSWER_HASH, "")
             put(COLUMN_USER_CREATED_AT, getCurrentDateTime())
             put(COLUMN_USER_UPDATED_AT, getCurrentDateTime())
             put(COLUMN_USER_GOOGLE_ID, googleId)
@@ -455,7 +450,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         return db.insert(TABLE_USERS, null, values)
     }
 
-    // Create Facebook Users (updated to include notification settings)
+    // Create Facebook Users
     fun createFacebookUser(name: String, email: String, facebookId: String): Long {
         if (name.isBlank() || email.isBlank() || facebookId.isBlank()) {
             Log.e("DatabaseHelper", "Cannot create Facebook user: missing required fields")
@@ -466,16 +461,16 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         val values = ContentValues().apply {
             put(COLUMN_USER_NAME, name.trim())
             put(COLUMN_USER_EMAIL, email.trim().lowercase())
-            put(COLUMN_USER_PASSWORD_HASH, "") // Empty for Facebook users
-            put(COLUMN_USER_AGE, 0) // Use 0 to indicate not set
+            put(COLUMN_USER_PASSWORD_HASH, "")
+            put(COLUMN_USER_AGE, 0)
             put(COLUMN_USER_WEIGHT, 0.0)
             put(COLUMN_USER_HEIGHT, 0.0)
             put(COLUMN_USER_SEX, "not_specified")
-            put(COLUMN_USER_DAILY_GOAL, 2150) // Reasonable default
-            put(COLUMN_USER_NOTIFICATION_FREQ, 30) // Default 30 minutes
-            put(COLUMN_USER_NOTIFICATIONS_ENABLED, 1) // Default enabled
-            put(COLUMN_USER_SECURITY_QUESTION, "") // Empty for social login users
-            put(COLUMN_USER_SECURITY_ANSWER_HASH, "") // Empty for social login users
+            put(COLUMN_USER_DAILY_GOAL, 2150)
+            put(COLUMN_USER_NOTIFICATION_FREQ, 30)
+            put(COLUMN_USER_NOTIFICATIONS_ENABLED, 1)
+            put(COLUMN_USER_SECURITY_QUESTION, "")
+            put(COLUMN_USER_SECURITY_ANSWER_HASH, "")
             put(COLUMN_USER_CREATED_AT, getCurrentDateTime())
             put(COLUMN_USER_UPDATED_AT, getCurrentDateTime())
             put(COLUMN_USER_FACEBOOK_ID, facebookId)
@@ -496,11 +491,11 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         }
     }
 
-    // Function for password recovery using security question - now uses plain text comparison
+    // Function for password recovery using security question
     fun verifySecurityQuestionAnswer(email: String, answer: String): Boolean {
         val user = getUserByEmail(email)
         return if (user != null && user.securityAnswerHash.isNotEmpty()) {
-            // Simple case-insensitive comparison instead of hash verification
+            // Case-insensitive comparison
             val result = answer.trim().lowercase() == user.securityAnswerHash.trim().lowercase()
             Log.d("DatabaseHelper", "Security question verification for $email: $result")
             result
@@ -627,15 +622,15 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
             val hashedPassword = hashPassword(newPassword)
 
             val values = ContentValues().apply {
-                put(COLUMN_USER_PASSWORD_HASH, hashedPassword) // Use the correct column name
-                put(COLUMN_USER_UPDATED_AT, getCurrentDateTime()) // Update the timestamp
+                put(COLUMN_USER_PASSWORD_HASH, hashedPassword)
+                put(COLUMN_USER_UPDATED_AT, getCurrentDateTime())
             }
 
             val rowsAffected = db.update(
                 TABLE_USERS, // Use the constant for table name
                 values,
-                "$COLUMN_USER_EMAIL = ?", // Use the constant for email column
-                arrayOf(email.trim().lowercase()) // Normalize email for consistency
+                "$COLUMN_USER_EMAIL = ?",
+                arrayOf(email.trim().lowercase())
             )
 
             Log.d("DatabaseHelper", "Password update for $email: $rowsAffected rows affected")
@@ -662,11 +657,6 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
             put(COLUMN_INTAKE_CREATED_AT, intake.createdAt)
         }
         return db.insert(TABLE_WATER_INTAKE, null, values)
-    }
-
-    fun getTodayWaterIntake(userId: Long): Int {
-        val today = getCurrentDate()
-        return getDailyWaterIntake(userId, today)
     }
 
     fun getDailyWaterIntake(userId: Long, date: String): Int {
@@ -697,7 +687,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         }
     }
 
-    // Method for Drink Frequency in Analytics Water Report
+    // Method for Drink Frequency in analytics (water report)
     fun getIntakeRecordsBetweenDates(userId: Long, startDate: String, endDate: String): List<WaterIntake> {
         val intakeRecords = mutableListOf<WaterIntake>()
         val db = this.readableDatabase
@@ -803,11 +793,6 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         return summaryList
     }
 
-    fun deleteWaterIntake(intakeId: Long): Int {
-        val db = this.writableDatabase
-        return db.delete(TABLE_WATER_INTAKE, "$COLUMN_INTAKE_ID = ?", arrayOf(intakeId.toString()))
-    }
-
     // Utility functions
     private fun cursorToUser(cursor: Cursor): User {
         return User(
@@ -874,7 +859,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
 
     // Helper function to calculate recommended daily water intake
     fun calculateRecommendedWaterIntake(weight: Double, sex: String): Int {
-        // Basic calculation: 35ml per kg for men, 31ml per kg for women
+        // 35ml per kg for men, 31ml per kg for women
         val multiplier = if (sex.lowercase() == "male") 35.0 else 31.0
         return (weight * multiplier).toInt()
     }
