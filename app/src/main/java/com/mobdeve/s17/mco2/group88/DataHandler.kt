@@ -35,7 +35,7 @@ data class WaterIntake(
     val userId: Long,
     val amount: Int,
     val date: String, // YYYY-MM-DD format
-    val time: String, // HH:mm:ss format
+    val time: String, // hh:mm:ss format
     val createdAt: String = getCurrentDateTime()
 )
 
@@ -73,7 +73,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
 
     companion object {
         private const val DATABASE_NAME = "AquaBuddy.db"
-        private const val DATABASE_VERSION = 8 // Increment version to add notifications_enabled column
+        private const val DATABASE_VERSION = 8
 
         // Users table
         private const val TABLE_USERS = "users"
@@ -87,7 +87,7 @@ class AquaBuddyDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         private const val COLUMN_USER_SEX = "sex"
         private const val COLUMN_USER_DAILY_GOAL = "daily_water_goal"
         private const val COLUMN_USER_NOTIFICATION_FREQ = "notification_frequency"
-        private const val COLUMN_USER_NOTIFICATIONS_ENABLED = "notifications_enabled" // NEW COLUMN
+        private const val COLUMN_USER_NOTIFICATIONS_ENABLED = "notifications_enabled"
         private const val COLUMN_USER_SECURITY_QUESTION = "security_question"
         private const val COLUMN_USER_SECURITY_ANSWER_HASH = "security_answer_hash"
         private const val COLUMN_USER_CREATED_AT = "created_at"
