@@ -70,24 +70,6 @@ class ProfileMainPage : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Handle the profile notifications switch
-        val profileNotificationSwitch = findViewById<Switch>(R.id.switch1)
-        profileNotificationSwitch.isChecked = isNotificationsEnabled
-        profileNotificationSwitch.setOnCheckedChangeListener { _, isChecked ->
-            isNotificationsEnabled = isChecked
-            saveNotificationSettingsToDatabase()
-            updateWaterReminderService()
-
-            // Update the GlobalTimerManager with new settings
-            if (isChecked) {
-                // Restart timer with new frequency when enabled
-                GlobalTimerManager.onWaterIntakeRecorded(this)
-            } else {
-                // Complete reset when disabled
-                GlobalTimerManager.completeReset(this)
-            }
-        }
-
         // Start the water reminder service if notifications are enabled
         if (isNotificationsEnabled) {
             WaterReminderServiceHelper.startWaterReminderService(this)
@@ -183,9 +165,6 @@ class ProfileMainPage : AppCompatActivity() {
             isNotificationsEnabled = true
             notificationFrequencyMinutes = 30
         }
-
-        // Update the profile switch
-        findViewById<Switch>(R.id.switch1)?.isChecked = isNotificationsEnabled
 
         // Also save to SharedPreferences for compatibility
         saveNotificationSettingsToSharedPrefs()
@@ -298,23 +277,34 @@ class ProfileMainPage : AppCompatActivity() {
         }
     }
 
-    // Calculate suggested water intake based on weight, height and sex
+    // Improved water intake calculation with proper medical formulas
     private fun calculateWaterIntake(weight: Float, height: Float, sex: String): Int {
-        // Use the database helper's calculation method as base
-        val dbHelper = AquaBuddyDatabaseHelper(this)
-        val baseIntake = dbHelper.calculateRecommendedWaterIntake(weight.toDouble(), sex)
+        // Base calculation using weight (35ml per kg for men, 31ml per kg for women)
+        val baseIntake = when (sex.lowercase()) {
+            "male", "m" -> weight * 35 // ml per kg for men
+            "female", "f" -> weight * 31 // ml per kg for women
+            else -> weight * 33 // Average for unspecified
+        }
 
-        // Optional: Add height factor for very tall or short people
+        // Height adjustment factor (BMI consideration)
+        val heightInMeters = height / 100
+        val bmi = weight / (heightInMeters * heightInMeters)
+
         val heightFactor = when {
-            height > 180 -> 1.1f  // Taller people need more water
-            height < 150 -> 0.9f  // Shorter people need slightly less
+            bmi > 25 -> 1.15f // Higher BMI needs more water
+            bmi < 18.5 -> 0.95f // Lower BMI needs slightly less
+            height > 185 -> 1.1f // Very tall people need more
+            height < 155 -> 0.95f // Shorter people need slightly less
             else -> 1.0f
         }
 
         val adjustedIntake = baseIntake * heightFactor
 
+        // Ensure reasonable bounds (1500ml - 4000ml)
+        val finalIntake = adjustedIntake.coerceIn(1500f, 4000f)
+
         // Round to nearest 50ml for cleaner numbers
-        return (adjustedIntake / 50).roundToInt() * 50
+        return (finalIntake / 50).roundToInt() * 50
     }
 
     // Get user data from database (weight, height, sex)
@@ -348,8 +338,12 @@ class ProfileMainPage : AppCompatActivity() {
             val (weight, height, sex) = userData
             val suggestedIntake = calculateWaterIntake(weight, height, sex)
 
-            // Update the subtitle with calculated suggestion
-            subtitleTextView.text = "Based on your profile: Weight: ${weight.toInt()}kg, Height: ${height.toInt()}cm\nSuggested = $suggestedIntake ml"
+            // Calculate BMI for additional context
+            val heightInMeters = height / 100
+            val bmi = weight / (heightInMeters * heightInMeters)
+
+            // Update the subtitle with calculated suggestion and BMI info
+            subtitleTextView.text = "Based on your profile:\nWeight: ${weight.toInt()}kg, Height: ${height.toInt()}cm, BMI: ${"%.1f".format(bmi)}\nRecommended: $suggestedIntake ml/day"
             // Set the suggested value as hint or default value
             goalsInput.hint = "$suggestedIntake ml"
         } else {
@@ -573,9 +567,6 @@ class ProfileMainPage : AppCompatActivity() {
 
             // Save settings to database
             saveNotificationSettingsToDatabase()
-
-            // Update profile switch
-            findViewById<Switch>(R.id.switch1)?.isChecked = isNotificationsEnabled
 
             // Update the background service with new settings
             WaterReminderServiceHelper.updateServiceSettings(this)
