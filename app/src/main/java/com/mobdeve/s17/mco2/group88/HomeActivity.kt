@@ -36,6 +36,9 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var notificationHelper: NotificationHelper
     private val NOTIFICATION_PERMISSION_REQUEST_CODE = 1001
 
+    // Track if goal has been reached today to avoid showing multiple congratulations
+    private var goalReachedToday = false
+
     // Add mutable state for week progress to make it reactive
     private var weekProgress = mutableStateOf(Array(7) { -1 })
     // Add mutable state for user's daily goal
@@ -79,10 +82,13 @@ class HomeActivity : AppCompatActivity() {
         // Initialize week progress
         updateWeekProgress()
 
+        // Check if goal was already reached today (to prevent showing congratulations on app start)
+        goalReachedToday = currentIntake.value >= userDailyGoal.value
+
         // RecyclerView setup
         val recyclerView = findViewById<RecyclerView>(R.id.recordsRecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        val adapter = WaterRecordAdapter(waterRecords)
+        val adapter = WaterRecordAdapter(waterRecords) // Remove the lambda for now
         recyclerView.adapter = adapter
 
         val switchCupButton = findViewById<ImageButton>(R.id.switchcup)
@@ -107,16 +113,23 @@ class HomeActivity : AppCompatActivity() {
                 selectedCupSize = selectedCupSize.value,  // Pass the selected cup size here
                 currentIntake = currentIntake.value, // Pass current intake here
                 onWaterIntake = { record ->
+                    // Store previous intake to check if goal was just reached
+                    val previousIntake = currentIntake.value
+
                     // Add new record to the beginning of the list to show newest first
                     waterRecords.add(0, record)
                     updateRecyclerView()
                     // Log water intake to database
                     logWaterIntake(record)
-                    // Update streak and goal percentage
-                    updateStreakAndGoalPercentage()
 
                     // Update the current intake when water is added
                     currentIntake.value += selectedCupSize.value
+
+                    // Update streak and goal percentage
+                    updateStreakAndGoalPercentage()
+
+                    // Check if goal was just reached and show congratulations
+                    checkAndShowCongratulations(previousIntake, currentIntake.value)
 
                     // Update week progress in real-time
                     updateWeekProgress()
@@ -129,6 +142,67 @@ class HomeActivity : AppCompatActivity() {
 
         // Update streak and goal percentage initially
         updateStreakAndGoalPercentage()
+    }
+
+    // Function to check if goal was just reached and show congratulations
+    private fun checkAndShowCongratulations(previousIntake: Int, newIntake: Int) {
+        val dailyGoal = userDailyGoal.value
+
+        // Check if goal was just reached (wasn't reached before, but is reached now)
+        if (previousIntake < dailyGoal && newIntake >= dailyGoal && !goalReachedToday) {
+            goalReachedToday = true
+            // Show simple Toast message instead of dialog
+            Toast.makeText(this, "🎉 Congratulations! You've reached your daily water goal! 🎉", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun setCupSizeButtonClickListener(dialog: Dialog, buttonId: Int, cupSizeText: String) {
+        val button = dialog.findViewById<ImageButton>(buttonId)
+        button.setOnClickListener {
+            // Remove the " ml" from the cupSizeText (e.g., "150 ml" -> "150")
+            val cupSize = cupSizeText.replace(" ml", "").toIntOrNull()
+
+            if (cupSize != null) {
+                selectedCupSize.value = cupSize
+                // Update RecyclerView to reflect new cup size in images
+                updateRecyclerView()
+                Toast.makeText(this, "Selected: ${selectedCupSize.value} ml", Toast.LENGTH_SHORT).show()
+                highlightSelectedButton(dialog, button)
+            } else {
+                Toast.makeText(this, "Invalid cup size", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun showCustomizePopup() {
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.popup_customizecup)
+        dialog.setCancelable(true)
+
+        val closeButton = dialog.findViewById<ImageButton>(R.id.customizeCloseButton)
+        closeButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        val confirmButton = dialog.findViewById<Button>(R.id.confirmButton)
+        val cupSizeInput = dialog.findViewById<EditText>(R.id.cupSizeInput)
+
+        confirmButton.setOnClickListener {
+            val customCupSize = cupSizeInput.text.toString().toIntOrNull()
+
+            if (customCupSize != null && customCupSize > 0) {
+                selectedCupSize.value = customCupSize
+                // Update RecyclerView to reflect new cup size in images
+                updateRecyclerView()
+                Toast.makeText(this, "Custom Cup Size Confirmed: ${selectedCupSize.value} ml", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Please enter a valid cup size", Toast.LENGTH_SHORT).show()
+            }
+
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     private fun requestNotificationPermission() {
@@ -214,12 +288,12 @@ class HomeActivity : AppCompatActivity() {
         // Calculate the goal percentage based on the user's intake for the current day
         val dailyGoal = userDailyGoal.value  // Use user's actual daily goal
 
-        // If the user hasn't met the goal yet, calculate the percentage
-        val goalPercentage = if (currentIntake.value > 0) {
+        // Calculate the percentage of goal achieved
+        val goalPercentage = if (dailyGoal > 0) {
             val percentage = (currentIntake.value.toFloat() / dailyGoal) * 100
-            percentage.coerceIn(0f, 100f)  // Ensure it stays between 0% and 100%
+            percentage.coerceAtMost(100f)  // Cap at 100% but don't set minimum to 0
         } else {
-            0f  // If no intake, set percentage to 0
+            0f  // If no goal set, percentage is 0
         }
 
         // Set goal percentage text
@@ -277,10 +351,10 @@ class HomeActivity : AppCompatActivity() {
             val totalIntakeForDay = waterIntakes.sumOf { it.amount }
 
             // Calculate progress percentage using user's actual daily goal
-            val progress = if (totalIntakeForDay > 0) {
+            val progress = if (userDailyGoal.value > 0) {
                 ((totalIntakeForDay.toFloat() / userDailyGoal.value) * 100).toInt().coerceIn(0, 100)
             } else {
-                0 // 0 means no intake, -1 means no data (which we don't use here)
+                0 // If no goal set, progress is 0
             }
 
             progressArray[dayIndex] = progress
@@ -368,51 +442,6 @@ class HomeActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    private fun showCustomizePopup() {
-        val dialog = Dialog(this)
-        dialog.setContentView(R.layout.popup_customizecup)
-        dialog.setCancelable(true)
-
-        val closeButton = dialog.findViewById<ImageButton>(R.id.customizeCloseButton)
-        closeButton.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        val confirmButton = dialog.findViewById<Button>(R.id.confirmButton)
-        val cupSizeInput = dialog.findViewById<EditText>(R.id.cupSizeInput)
-
-        confirmButton.setOnClickListener {
-            val customCupSize = cupSizeInput.text.toString().toIntOrNull()
-
-            if (customCupSize != null && customCupSize > 0) {
-                selectedCupSize.value = customCupSize
-                Toast.makeText(this, "Custom Cup Size Confirmed: ${selectedCupSize.value} ml", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, "Please enter a valid cup size", Toast.LENGTH_SHORT).show()
-            }
-
-            dialog.dismiss()
-        }
-
-        dialog.show()
-    }
-
-    private fun setCupSizeButtonClickListener(dialog: Dialog, buttonId: Int, cupSizeText: String) {
-        val button = dialog.findViewById<ImageButton>(buttonId)
-        button.setOnClickListener {
-            // Remove the " ml" from the cupSizeText (e.g., "150 ml" -> "150")
-            val cupSize = cupSizeText.replace(" ml", "").toIntOrNull()
-
-            if (cupSize != null) {
-                selectedCupSize.value = cupSize
-                Toast.makeText(this, "Selected: ${selectedCupSize.value} ml", Toast.LENGTH_SHORT).show()
-                highlightSelectedButton(dialog, button)
-            } else {
-                Toast.makeText(this, "Invalid cup size", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
     private fun highlightSelectedButton(dialog: Dialog, selectedButton: ImageButton) {
         val gridLayout = dialog.findViewById<GridLayout>(R.id.gridLayout)
         for (i in 0 until gridLayout.childCount) {
@@ -462,6 +491,19 @@ class HomeActivity : AppCompatActivity() {
         // Just update the TextView reference and refresh display - don't reset timer
         GlobalTimerManager.updateTextView(nextSipTextView)
         GlobalTimerManager.updateTimerDisplay(this)
+
+        // Reset the goal reached flag when resuming (in case it's a new day)
+        val currentDate = getCurrentDate()
+        val lastCheckDate = getSharedPreferences("AquaBuddyPrefs", Context.MODE_PRIVATE)
+            .getString("last_goal_check_date", "")
+
+        if (currentDate != lastCheckDate) {
+            goalReachedToday = false
+            getSharedPreferences("AquaBuddyPrefs", Context.MODE_PRIVATE)
+                .edit()
+                .putString("last_goal_check_date", currentDate)
+                .apply()
+        }
     }
 
     override fun onPause() {
