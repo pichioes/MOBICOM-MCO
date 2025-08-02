@@ -22,6 +22,14 @@ object GlobalTimerManager {
         currentTextView = textView
         loadTimerState(context)
 
+        // CHECK IF NOTIFICATIONS ARE ENABLED FIRST
+        if (!areNotificationsEnabled(context)) {
+            // Notifications disabled, don't start timer
+            completeReset(context)
+            currentTextView?.text = "Notifications disabled"
+            return
+        }
+
         if (isTimerRunning && timerStartTime > 0) {
             // Timer was already running, check if it should still be running
             val elapsedMinutes = ((System.currentTimeMillis() - timerStartTime) / 60000).toInt()
@@ -56,6 +64,13 @@ object GlobalTimerManager {
     }
 
     private fun startNewTimerCycle(context: Context) {
+        // CHECK IF NOTIFICATIONS ARE ENABLED
+        if (!areNotificationsEnabled(context)) {
+            completeReset(context)
+            currentTextView?.text = "Notifications disabled"
+            return
+        }
+
         // Cancel any existing timer
         timerTask?.cancel()
         timer?.cancel()
@@ -68,6 +83,13 @@ object GlobalTimerManager {
     }
 
     private fun ensureTimerIsRunning(context: Context) {
+        // CHECK IF NOTIFICATIONS ARE ENABLED
+        if (!areNotificationsEnabled(context)) {
+            completeReset(context)
+            currentTextView?.text = "Notifications disabled"
+            return
+        }
+
         // Cancel existing timer first
         timerTask?.cancel()
         timer?.cancel()
@@ -75,6 +97,12 @@ object GlobalTimerManager {
         timer = Timer()
         timerTask = object : TimerTask() {
             override fun run() {
+                // Double-check notifications are still enabled
+                if (!areNotificationsEnabled(context)) {
+                    completeReset(context)
+                    return
+                }
+
                 updateTimerDisplay(context)
 
                 val elapsedMinutes = ((System.currentTimeMillis() - timerStartTime) / 60000).toInt()
@@ -93,6 +121,12 @@ object GlobalTimerManager {
     }
 
     private fun handleTimerExpiration(context: Context) {
+        // CHECK IF NOTIFICATIONS ARE STILL ENABLED
+        if (!areNotificationsEnabled(context)) {
+            completeReset(context)
+            return
+        }
+
         // Show notification
         notificationHelper?.showWaterReminderNotification()
 
@@ -110,7 +144,9 @@ object GlobalTimerManager {
         val timeLeft = notificationFrequency - elapsedMinutes
 
         currentTextView?.post {
-            if (timeLeft > 0) {
+            if (!areNotificationsEnabled(context)) {
+                currentTextView?.text = "Notifications disabled"
+            } else if (timeLeft > 0) {
                 currentTextView?.text = "$timeLeft Mins"
             } else {
                 currentTextView?.text = "Time to drink!"
@@ -120,13 +156,24 @@ object GlobalTimerManager {
 
     // This should ONLY be called when user actually drinks water
     fun onWaterIntakeRecorded(context: Context) {
+        // Always cancel existing timer and notifications when user drinks water
         timerTask?.cancel()
         timer?.cancel()
-
         notificationHelper?.cancelWaterReminderNotification()
 
-        // Start completely new timer cycle
-        startNewTimerCycle(context)
+        // CHECK IF NOTIFICATIONS ARE ENABLED - only restart if enabled
+        if (areNotificationsEnabled(context)) {
+            // Notifications are on, start new timer cycle
+            startNewTimerCycle(context)
+        } else {
+            // Notifications are off, keep them off but clear timer state
+            isTimerRunning = false
+            timerStartTime = 0
+            saveTimerState(context)
+            currentTextView?.post {
+                currentTextView?.text = "Notifications disabled"
+            }
+        }
     }
 
     fun updateTextView(textView: TextView) {
@@ -136,6 +183,12 @@ object GlobalTimerManager {
     private fun getUserNotificationFrequency(context: Context): Int {
         val sharedPreferences = context.getSharedPreferences("AquaBuddyPrefs", Context.MODE_PRIVATE)
         return sharedPreferences.getInt("notification_frequency", 30)
+    }
+
+    // NEW: Check if notifications are enabled
+    private fun areNotificationsEnabled(context: Context): Boolean {
+        val sharedPreferences = context.getSharedPreferences("AquaBuddyPrefs", Context.MODE_PRIVATE)
+        return sharedPreferences.getBoolean("notifications_enabled", true)
     }
 
     fun cleanup() {
@@ -154,6 +207,8 @@ object GlobalTimerManager {
         isTimerRunning = false
         timerStartTime = 0
         saveTimerState(context)
-        currentTextView = null
+        currentTextView?.post {
+            currentTextView?.text = "Notifications disabled"
+        }
     }
 }
