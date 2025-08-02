@@ -86,7 +86,7 @@ object GlobalTimerManager {
         // CHECK IF NOTIFICATIONS ARE ENABLED
         if (!areNotificationsEnabled(context)) {
             completeReset(context)
-            currentTextView?.text = "Notifications disabled"
+            currentTextView?.text = "Notifs OFF"
             return
         }
 
