@@ -26,7 +26,7 @@ object GlobalTimerManager {
         if (!areNotificationsEnabled(context)) {
             // Notifications disabled, don't start timer
             completeReset(context)
-            currentTextView?.text = "Notifications disabled"
+            currentTextView?.text = "Notifs OFF"
             return
         }
 
@@ -67,7 +67,7 @@ object GlobalTimerManager {
         // CHECK IF NOTIFICATIONS ARE ENABLED
         if (!areNotificationsEnabled(context)) {
             completeReset(context)
-            currentTextView?.text = "Notifications disabled"
+            currentTextView?.text = "Notifs OFF"
             return
         }
 
@@ -145,7 +145,7 @@ object GlobalTimerManager {
 
         currentTextView?.post {
             if (!areNotificationsEnabled(context)) {
-                currentTextView?.text = "Notifications disabled"
+                currentTextView?.text = "Notifs OFF"
             } else if (timeLeft > 0) {
                 currentTextView?.text = "$timeLeft Mins"
             } else {
@@ -171,7 +171,7 @@ object GlobalTimerManager {
             timerStartTime = 0
             saveTimerState(context)
             currentTextView?.post {
-                currentTextView?.text = "Notifications disabled"
+                currentTextView?.text = "Notifs OFF"
             }
         }
     }
@@ -208,7 +208,7 @@ object GlobalTimerManager {
         timerStartTime = 0
         saveTimerState(context)
         currentTextView?.post {
-            currentTextView?.text = "Notifications disabled"
+            currentTextView?.text = "Notifs OFF"
         }
     }
 }
