@@ -196,7 +196,7 @@ object GlobalTimerManager {
         timer?.cancel()
         // Don't reset the timer state - keep it for when app resumes
         currentTextView = null
-    }f
+    }
 
     // Method to completely stop and reset timer (for when user logs out, etc.)
     fun completeReset(context: Context) {

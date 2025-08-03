@@ -1,5 +1,6 @@
 package com.mobdeve.s17.mco2.group88
 
+import kotlin.math.roundToInt
 import android.os.Bundle
 import android.widget.EditText
 import android.widget.Spinner
@@ -326,7 +327,7 @@ class EditProfile : AppCompatActivity() {
         val finalIntake = adjustedIntake.coerceIn(1500f, 4000f)
 
         // Round to nearest 50ml for cleaner numbers
-        return (finalIntake / 50).kotlin.math.roundToInt() * 50
+        return (finalIntake / 50).roundToInt() * 50
     }
 
     // Updated to handle 3 buttons instead of 2
