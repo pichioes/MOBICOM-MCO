@@ -51,7 +51,7 @@ class NotificationHelper(private val context: Context) {
         )
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.record_glass)
+            .setSmallIcon(R.drawable.appicon)
             .setContentTitle("Don't wait, hydrate!")
             .setContentText("Have you drank water yet? Every sip counts!")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
