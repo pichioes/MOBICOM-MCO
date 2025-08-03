@@ -88,7 +88,7 @@ class ProfileMainPage : AppCompatActivity() {
         loadNotificationSettingsFromDatabase()
     }
 
-    // NEW: Load and display user's name from database
+    // Load and display user's name from database
     private fun loadAndDisplayUserName() {
         val profileNameTextView = findViewById<TextView>(R.id.ProfileName)
         val sharedPreferences = getSharedPreferences("AquaBuddyPrefs", MODE_PRIVATE)
@@ -107,7 +107,7 @@ class ProfileMainPage : AppCompatActivity() {
         }
     }
 
-    // NEW: Load and display user's height and weight from database
+    // Load and display user's height and weight from database
     private fun loadAndDisplayHeightWeight() {
         val heightTextView = findViewById<TextView>(R.id.height)
         val weightTextView = findViewById<TextView>(R.id.weight)

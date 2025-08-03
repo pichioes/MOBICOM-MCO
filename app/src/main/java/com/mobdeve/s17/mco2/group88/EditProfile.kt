@@ -18,10 +18,10 @@ import java.util.*
 
 class EditProfile : AppCompatActivity() {
 
-    // Variables for gender selection
-    private var selectedGender: String = "Female"  // Default gender is Female
+    // Setting Variables for Gender
+    private var selectedGender: String = "Female"
 
-    // Database helper
+    // DB Helper
     private lateinit var dbHelper: AquaBuddyDatabaseHelper
     private lateinit var sharedPreferences: SharedPreferences
     private var currentUserId: Long = -1
@@ -86,7 +86,7 @@ class EditProfile : AppCompatActivity() {
             updateGenderButtonColors(othersButton, femaleButton, maleButton)
         }
 
-        // Save Button: When clicked, it saves the data to database
+        // Save Button, saves the data to database
         val saveButton = findViewById<Button>(R.id.save_button)
         saveButton.setOnClickListener {
             saveUserProfile(firstNameField, lastNameField, emailField, ageSpinner, heightInput, weightInput)
@@ -105,7 +105,7 @@ class EditProfile : AppCompatActivity() {
             val currentUser = dbHelper.getUserById(currentUserId)
 
             if (currentUser != null) {
-                // Update the header display with current user info
+
                 updateHeaderDisplay(currentUser)
 
                 // Parse full name into first and last name
@@ -127,12 +127,12 @@ class EditProfile : AppCompatActivity() {
                     weightInput.setText(currentUser.weight.toInt().toString())
                 }
 
-                // Set gender selection - Updated to handle Others
+                // Set gender selection
                 selectedGender = when (currentUser.sex.lowercase()) {
                     "male", "m" -> "Male"
                     "female", "f" -> "Female"
                     "others", "other", "o" -> "Others"
-                    else -> "Female" // Default fallback
+                    else -> "Female"
                 }
 
                 // Update gender button colors - Updated to include Others button
@@ -191,7 +191,7 @@ class EditProfile : AppCompatActivity() {
                 return
             }
 
-            // Capture input data
+            // Captures input data
             val firstName = firstNameField.text.toString().trim()
             val lastName = lastNameField.text.toString().trim()
             val email = emailField.text.toString().trim()
@@ -258,7 +258,7 @@ class EditProfile : AppCompatActivity() {
                 currentUser.dailyWaterGoal
             }
 
-            // Create updated user object - Store gender in lowercase for consistency
+            // Create updated user object to update in the database
             val updatedUser = currentUser.copy(
                 name = fullName,
                 email = email,
@@ -330,7 +330,7 @@ class EditProfile : AppCompatActivity() {
         return (finalIntake / 50).roundToInt() * 50
     }
 
-    // Updated to handle 3 buttons instead of 2
+    // Gender buttons
     private fun updateGenderButtonColors(selectedButton: Button, unselectedButton1: Button, unselectedButton2: Button) {
         selectedButton.setBackgroundColor(resources.getColor(R.color.colorSelected))
         unselectedButton1.setBackgroundColor(resources.getColor(R.color.colorUnselected))
@@ -344,7 +344,7 @@ class EditProfile : AppCompatActivity() {
         spinner.adapter = adapter
     }
 
-    // Function to handle Female button click (keeping for XML onClick compatibility)
+    // Function to handle Female button click
     fun onFemaleClick(view: View) {
         selectedGender = "Female"
         val femaleButton: Button = findViewById(R.id.femaleButton)
@@ -353,7 +353,7 @@ class EditProfile : AppCompatActivity() {
         updateGenderButtonColors(femaleButton, maleButton, othersButton)
     }
 
-    // Function to handle Male button click (keeping for XML onClick compatibility)
+    // Function to handle Male button click
     fun onMaleClick(view: View) {
         selectedGender = "Male"
         val femaleButton: Button = findViewById(R.id.femaleButton)
@@ -362,7 +362,7 @@ class EditProfile : AppCompatActivity() {
         updateGenderButtonColors(maleButton, femaleButton, othersButton)
     }
 
-    // NEW: Function to handle Others button click (for XML onClick compatibility)
+    // Function to handle Others button click
     fun onOthersClick(view: View) {
         selectedGender = "Others"
         val femaleButton: Button = findViewById(R.id.femaleButton)
