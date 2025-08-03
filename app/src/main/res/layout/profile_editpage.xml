@@ -212,7 +212,7 @@
 
     </LinearLayout>
 
-    <!-- Gender Selection (Male / Female as Buttons) -->
+    <!-- Gender Selection (Female / Male / Others as Buttons) -->
     <TextView
         android:id="@+id/gender"
         android:layout_width="match_parent"
@@ -223,18 +223,21 @@
         android:textSize="16sp"
         android:fontFamily="@font/outfit" />
 
-    <!-- Buttons for Male and Female in a container -->
+    <!-- Buttons for Female, Male, and Others in a container -->
     <LinearLayout
-        android:layout_width="303dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
 
         <!-- Female Button -->
         <Button
             android:id="@+id/femaleButton"
-            android:layout_width="150dp"
+            android:layout_width="0dp"
             android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="5dp"
             android:backgroundTint="#FFFFFF"
             android:fontFamily="@font/outfit"
             android:onClick="onFemaleClick"
@@ -246,12 +249,28 @@
         <!-- Male Button -->
         <Button
             android:id="@+id/maleButton"
-            android:layout_width="150dp"
+            android:layout_width="0dp"
             android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="5dp"
             android:backgroundTint="#FFFFFF"
             android:fontFamily="@font/outfit"
             android:onClick="onMaleClick"
             android:text="Male"
+            android:textAllCaps="false"
+            android:textColor="@color/black"
+            android:textSize="14sp" />
+
+        <!-- Others Button -->
+        <Button
+            android:id="@+id/othersButton"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:backgroundTint="#FFFFFF"
+            android:fontFamily="@font/outfit"
+            android:onClick="onOthersClick"
+            android:text="Others"
             android:textAllCaps="false"
             android:textColor="@color/black"
             android:textSize="14sp" />

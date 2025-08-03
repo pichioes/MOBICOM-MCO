@@ -12,6 +12,8 @@ import android.widget.Toast
 import android.util.Log
 import android.content.SharedPreferences
 import android.widget.TextView
+import java.text.SimpleDateFormat
+import java.util.*
 
 class EditProfile : AppCompatActivity() {
 
@@ -60,20 +62,27 @@ class EditProfile : AppCompatActivity() {
         // Load current user data and populate fields - this loads existing data for editing
         loadCurrentUserData(firstNameField, lastNameField, emailField, ageSpinner, heightInput, weightInput)
 
-        // Gender Button Setup
+        // Gender Button Setup - Updated to include Others button
         val femaleButton: Button = findViewById(R.id.femaleButton)
         val maleButton: Button = findViewById(R.id.maleButton)
+        val othersButton: Button = findViewById(R.id.othersButton)
 
         // OnClickListener for Female Button
         femaleButton.setOnClickListener {
             selectedGender = "Female"
-            updateGenderButtonColors(femaleButton, maleButton)
+            updateGenderButtonColors(femaleButton, maleButton, othersButton)
         }
 
         // OnClickListener for Male Button
         maleButton.setOnClickListener {
             selectedGender = "Male"
-            updateGenderButtonColors(maleButton, femaleButton)
+            updateGenderButtonColors(maleButton, femaleButton, othersButton)
+        }
+
+        // OnClickListener for Others Button
+        othersButton.setOnClickListener {
+            selectedGender = "Others"
+            updateGenderButtonColors(othersButton, femaleButton, maleButton)
         }
 
         // Save Button: When clicked, it saves the data to database
@@ -117,20 +126,23 @@ class EditProfile : AppCompatActivity() {
                     weightInput.setText(currentUser.weight.toInt().toString())
                 }
 
-                // Set gender selection
+                // Set gender selection - Updated to handle Others
                 selectedGender = when (currentUser.sex.lowercase()) {
-                    "male" -> "Male"
-                    "female" -> "Female"
+                    "male", "m" -> "Male"
+                    "female", "f" -> "Female"
+                    "others", "other", "o" -> "Others"
                     else -> "Female" // Default fallback
                 }
 
-                // Update gender button colors
+                // Update gender button colors - Updated to include Others button
                 val femaleButton: Button = findViewById(R.id.femaleButton)
                 val maleButton: Button = findViewById(R.id.maleButton)
-                if (selectedGender == "Female") {
-                    updateGenderButtonColors(femaleButton, maleButton)
-                } else {
-                    updateGenderButtonColors(maleButton, femaleButton)
+                val othersButton: Button = findViewById(R.id.othersButton)
+
+                when (selectedGender) {
+                    "Female" -> updateGenderButtonColors(femaleButton, maleButton, othersButton)
+                    "Male" -> updateGenderButtonColors(maleButton, femaleButton, othersButton)
+                    "Others" -> updateGenderButtonColors(othersButton, femaleButton, maleButton)
                 }
 
                 // Set age spinner selection
@@ -239,12 +251,13 @@ class EditProfile : AppCompatActivity() {
 
             // Calculate new daily water goal based on updated weight and gender
             val newDailyWaterGoal = if (weight > 0) {
-                dbHelper.calculateRecommendedWaterIntake(weight, selectedGender.lowercase())
+                // Use enhanced calculation that handles Others gender
+                calculateWaterIntake(weight.toFloat(), height.toFloat(), selectedGender)
             } else {
                 currentUser.dailyWaterGoal
             }
 
-            // Create updated user object
+            // Create updated user object - Store gender in lowercase for consistency
             val updatedUser = currentUser.copy(
                 name = fullName,
                 email = email,
@@ -285,9 +298,42 @@ class EditProfile : AppCompatActivity() {
         }
     }
 
-    private fun updateGenderButtonColors(selectedButton: Button, unselectedButton: Button) {
+    // Enhanced water intake calculation that handles Others gender
+    private fun calculateWaterIntake(weight: Float, height: Float, sex: String): Int {
+        // Base calculation using weight (35ml per kg for men, 31ml per kg for women, 33ml per kg for others)
+        val baseIntake = when (sex.lowercase()) {
+            "male", "m" -> weight * 35 // ml per kg for men
+            "female", "f" -> weight * 31 // ml per kg for women
+            "others", "other", "o" -> weight * 33 // ml per kg for others/non-binary
+            else -> weight * 33 // Average for unspecified
+        }
+
+        // Height adjustment factor (BMI consideration)
+        val heightInMeters = height / 100
+        val bmi = weight / (heightInMeters * heightInMeters)
+
+        val heightFactor = when {
+            bmi > 25 -> 1.15f // Higher BMI needs more water
+            bmi < 18.5 -> 0.95f // Lower BMI needs slightly less
+            height > 185 -> 1.1f // Very tall people need more
+            height < 155 -> 0.95f // Shorter people need slightly less
+            else -> 1.0f
+        }
+
+        val adjustedIntake = baseIntake * heightFactor
+
+        // Ensure reasonable bounds (1500ml - 4000ml)
+        val finalIntake = adjustedIntake.coerceIn(1500f, 4000f)
+
+        // Round to nearest 50ml for cleaner numbers
+        return (finalIntake / 50).kotlin.math.roundToInt() * 50
+    }
+
+    // Updated to handle 3 buttons instead of 2
+    private fun updateGenderButtonColors(selectedButton: Button, unselectedButton1: Button, unselectedButton2: Button) {
         selectedButton.setBackgroundColor(resources.getColor(R.color.colorSelected))
-        unselectedButton.setBackgroundColor(resources.getColor(R.color.colorUnselected))
+        unselectedButton1.setBackgroundColor(resources.getColor(R.color.colorUnselected))
+        unselectedButton2.setBackgroundColor(resources.getColor(R.color.colorUnselected))
     }
 
     // Function to set up spinners with data
@@ -302,7 +348,8 @@ class EditProfile : AppCompatActivity() {
         selectedGender = "Female"
         val femaleButton: Button = findViewById(R.id.femaleButton)
         val maleButton: Button = findViewById(R.id.maleButton)
-        updateGenderButtonColors(femaleButton, maleButton)
+        val othersButton: Button = findViewById(R.id.othersButton)
+        updateGenderButtonColors(femaleButton, maleButton, othersButton)
     }
 
     // Function to handle Male button click (keeping for XML onClick compatibility)
@@ -310,6 +357,21 @@ class EditProfile : AppCompatActivity() {
         selectedGender = "Male"
         val femaleButton: Button = findViewById(R.id.femaleButton)
         val maleButton: Button = findViewById(R.id.maleButton)
-        updateGenderButtonColors(maleButton, femaleButton)
+        val othersButton: Button = findViewById(R.id.othersButton)
+        updateGenderButtonColors(maleButton, femaleButton, othersButton)
+    }
+
+    // NEW: Function to handle Others button click (for XML onClick compatibility)
+    fun onOthersClick(view: View) {
+        selectedGender = "Others"
+        val femaleButton: Button = findViewById(R.id.femaleButton)
+        val maleButton: Button = findViewById(R.id.maleButton)
+        val othersButton: Button = findViewById(R.id.othersButton)
+        updateGenderButtonColors(othersButton, femaleButton, maleButton)
+    }
+
+    // Helper function to get current date and time
+    private fun getCurrentDateTime(): String {
+        return SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
     }
 }
